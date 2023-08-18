@@ -138,17 +138,24 @@ all references are valid.
 ```rust
 enum List<'a, T> {
     Cons(T, &'a List<'a, T>),
-    Nil(ImpVec<T>),
+    Nil(ImpVec<List<'a, T>>),
 }
 impl<'a, T> List<'a, T> {
+    fn storage(&self) -> &ImpVec<List<'a, T>> {
+        match self {
+            List::Cons(_, list) => list.storage(),
+            List::Nil(storage) => storage,
+        }
+    }
     pub fn nil() -> Self {
         Self::Nil(ImpVec::default())
     }
-    pub fn connect_from(&'a self, value: T) -> Self {
-        Self::Cons(value, self)
+    pub fn connect_from(&'a self, value: T) -> &Self {
+        let new_list = Self::Cons(value, self);
+        self.storage().push_get_ref(new_list)
     }
 }
-fn main2() {
+fn main() {
     let nil = List::nil();          // sentinel holds the storage
     let r3 = nil.connect_from(3);   // Cons(3) -> Nil
     let r2 = r3.connect_from(2);    // Cons(2) -> Cons(3)
