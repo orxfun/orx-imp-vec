@@ -1,0 +1,15 @@
+[package]
+name = "orx-imp-vec"
+version = "0.1.0"
+edition = "2021"
+authors = ["orxfun <orx.ugur.arikan@gmail.com>"]
+description = "`ImpVec` stands for 'immutable-push-vec'. It uses `orx_split_vec::SplitVec` as the underlying data structure, and additionally allows for push/extend operations with an immutable reference."
+license = "MIT"
+repository = "https://github.com/orxfun/orx-imp-vec/"
+keywords = ["vec", "array", "split", "fragments", "pinned"]
+categories = ["Data structures"]
+
+# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+
+[dependencies]
+orx-split-vec = "0.1.6"
