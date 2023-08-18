@@ -132,20 +132,17 @@ fn main() {
 Alternatively, the `ImpVec` can be used only internally
 leading to a cons list implementation with a nice api to build the list.
 
+The storage will keep growing seamlessly while making sure that
+all references are valid.
+
 ```rust
 enum List<'a, T> {
     Cons(T, &'a List<'a, T>),
-    Nil(Rc<ImpVec<T>>),
+    Nil(ImpVec<T>),
 }
 impl<'a, T> List<'a, T> {
-    fn storage(&self) -> Rc<ImpVec<T>> {
-        match self {
-            List::Cons(_, list) => list.storage(),
-            List::Nil(s) => s.clone(),
-        }
-    }
     pub fn nil() -> Self {
-        Self::Nil(Rc::new(ImpVec::default()))
+        Self::Nil(ImpVec::default())
     }
     pub fn connect_from(&'a self, value: T) -> Self {
         Self::Cons(value, self)
