@@ -134,13 +134,13 @@ leading to a cons list implementation with a nice api to build the list.
 
 ```rust
 enum List<'a, T> {
-    Cons(Rc<ImpVec<T>>, T, &'a List<'a, T>),
+    Cons(T, &'a List<'a, T>),
     Nil(Rc<ImpVec<T>>),
 }
 impl<'a, T> List<'a, T> {
     fn storage(&self) -> Rc<ImpVec<T>> {
         match self {
-            List::Cons(s, _, _) => s.clone(),
+            List::Cons(_, list) => list.storage(),
             List::Nil(s) => s.clone(),
         }
     }
@@ -148,11 +148,11 @@ impl<'a, T> List<'a, T> {
         Self::Nil(Rc::new(ImpVec::default()))
     }
     pub fn connect_from(&'a self, value: T) -> Self {
-        Self::Cons(self.storage(), value, self)
+        Self::Cons(value, self)
     }
 }
-fn main() {
-    let nil = List::nil();
+fn main2() {
+    let nil = List::nil();          // sentinel holds the storage
     let r3 = nil.connect_from(3);   // Cons(3) -> Nil
     let r2 = r3.connect_from(2);    // Cons(2) -> Cons(3)
     let r1 = r2.connect_from(1);    // Cons(2) -> Cons(1)
