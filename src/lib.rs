@@ -183,7 +183,7 @@
 //! * C -> D
 //! * B -> C (the link causing the paradox!)
 //!
-//! Such a graph could very simply constructed with an `ImpVec` where the nodes
+//! Such a graph could be constructed very conveniently with an `ImpVec` where the nodes
 //! are connected via regular references.
 //!
 //! ```rust
