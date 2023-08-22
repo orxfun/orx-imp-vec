@@ -1,6 +1,11 @@
+use orx_split_vec::SplitVecGrowth;
+
 use crate::ImpVec;
 
-impl<T> ImpVec<T> {
+impl<T, G> ImpVec<T, G>
+where
+    G: SplitVecGrowth<T>,
+{
     /// Appends an element to the back of a collection.
     ///
     /// Unlike `std::vec::Vec` or `orx_split_vec::SplitVec`;
@@ -35,12 +40,16 @@ impl<T> ImpVec<T> {
     pub fn push(&self, value: T) {
         let split_vec = unsafe { &mut *self.as_mut_ptr() };
         let fragments = unsafe { split_vec.fragments_mut() };
-        let f = fragments.len() - 1;
-        if fragments[f].has_capacity_for_one() {
-            fragments[f].push(value);
-        } else {
+        if fragments.is_empty() {
             self.add_fragment_with_first_value(value);
-        }
+        } else {
+            let last_f = fragments.len() - 1;
+            if fragments[last_f].has_capacity_for_one() {
+                fragments[last_f].push(value);
+            } else {
+                self.add_fragment_with_first_value(value);
+            }
+        };
     }
 
     /// Appends an element to the back of a collection and returns a reference to it.
@@ -55,10 +64,9 @@ impl<T> ImpVec<T> {
     /// as long as the collection is not mutated with methods such as `insert`, `remove` or `pop`.
     ///
     /// ```
-    /// use orx_split_vec::FragmentGrowth;
     /// use orx_imp_vec::ImpVec;
     ///
-    /// let vec = ImpVec::with_growth(FragmentGrowth::constant(4));
+    /// let vec = ImpVec::with_linear_growth(4);
     /// let ref1 = vec.push_get_ref(1);
     /// let ref_elem_addr = ref1 as *const i32;
     ///
@@ -103,13 +111,19 @@ impl<T> ImpVec<T> {
     pub fn push_get_ref(&self, value: T) -> &T {
         let split_vec = unsafe { &mut *self.as_mut_ptr() };
         let fragments = unsafe { split_vec.fragments_mut() };
-        let mut f = fragments.len() - 1;
-        if fragments[f].has_capacity_for_one() {
-            fragments[f].push(value);
-        } else {
+        let f = if fragments.is_empty() {
             self.add_fragment_with_first_value(value);
-            f += 1;
-        }
+            0
+        } else {
+            let last_f = fragments.len() - 1;
+            if fragments[last_f].has_capacity_for_one() {
+                fragments[last_f].push(value);
+                last_f
+            } else {
+                self.add_fragment_with_first_value(value);
+                last_f + 1
+            }
+        };
         &fragments[f][fragments[f].len() - 1]
     }
 }

@@ -1,12 +1,17 @@
 # orx-imp-vec
 
-An `ImpVec` uses [`SplitVec`](https://crates.io/crates/orx-split-vec) as the underlying data model and inherits its features.
+An `ImpVec` uses [`SplitVec`](https://crates.io/crates/orx-split-vec) as the underlying data model,
+and hence, inherits the following features:
 
-Additionally, it allows to push to or extend the vector with an immutable reference; hence, the name:
+* vector growth does not require memory copies,
+* therefore, growth does not cause the memory locations of elements to change, and
+* provides flexible strategies to explicitly define how the vector should grow.
+
+Additionally, `ImpVec` allows to push to or extend the vector with an immutable reference;
+hence, it gets the name `ImpVec`:
 
 * imp-vec stands for 'immutable push vector',
-* and also hints a little evil behavior it has.
-
+* and also hints for the little evil behavior it has.
 
 ## Safety-1
 
@@ -21,10 +26,10 @@ vec.extend_from_slice(&[0, 1]);
 
 let ref0 = &vec[0];
 vec.push(2);
-let value0 = *ref0;
+// let value0 = *ref0; // does not compile!
 ```
 
-Why does `push` invalidate the reference to the first element which is already pushed to the vector:
+Why does `push` invalidate the reference to the first element which is already pushed to the vector?
 * the vector has a capacity of 2; and hence, the push will lead to an expansion of the vector's capacity;
 * it is possible that the underlying data will be copied to another place in memory;
 * in this case `ref0` will be an invalid reference and dereferencing it would lead to UB.
@@ -33,13 +38,12 @@ However, `ImpVec` uses the `SplitVec` as its underlying data model
 which guarantees that the memory location of an item added to the split vector will never change
 unless it is removed from the vector or the vector is dropped.
 
-Therefore, the  following `ImpVec` version compiles and maintains the validity of the references.
+Therefore, the  following `ImpVec` version compiles and preserves the validity of the references.
 
 ```rust
-use orx_split_vec::FragmentGrowth;
 use orx_imp_vec::ImpVec;
 
-let vec = ImpVec::with_growth(FragmentGrowth::constant(2));
+let vec = ImpVec::with_doubling_growth(2);
 vec.extend_from_slice(&[0, 1]);
 
 let ref0 = &vec[0];
@@ -73,7 +77,7 @@ For instance, the following code safely will not compile.
 ```rust
 use orx_imp_vec::ImpVec;
 
-let mut vec = ImpVec::default();
+let mut vec = ImpVec::default(); // mut required for the insert call
 
 // push the first item and hold a reference to it
 let ref0 = vec.push_get_ref(0);
@@ -85,8 +89,8 @@ vec.push(1);
 vec.insert(0, 42);
 assert_eq!(vec, &[42, 0, 1]);
 
-// therefore, this line will lead to a compiler error.
-let value0 = *ref0;
+// therefore, this line will lead to a compiler error!!
+// let value0 = *ref0;
 ```
 
 ## Practicality
@@ -117,6 +121,8 @@ Below is a convenient cons list implementation using `ImpVec` as a storage:
 * while simultaneously holding onto and using references to already created lists.
 
 ```rust
+use orx_imp_vec::ImpVec;
+
 enum List<'a, T> {
     Cons(T, &'a List<'a, T>),
     Nil,
@@ -133,9 +139,11 @@ Alternatively, the `ImpVec` can be used only internally
 leading to a cons list implementation with a nice api to build the list.
 
 The storage will keep growing seamlessly while making sure that
-all references are valid.
+all references are **thin** and **valid**.
 
 ```rust
+use orx_imp_vec::ImpVec;
+
 enum List<'a, T> {
     Cons(T, &'a List<'a, T>),
     Nil(ImpVec<List<'a, T>>),
@@ -160,5 +168,72 @@ fn main() {
     let r3 = nil.connect_from(3);   // Cons(3) -> Nil
     let r2 = r3.connect_from(2);    // Cons(2) -> Cons(3)
     let r1 = r2.connect_from(1);    // Cons(2) -> Cons(1)
+}
+```
+
+### Directed Acyclic Graph
+
+The cons list example reveals a pattern;
+`ImpVec` can safely store and allow references when the structure is
+built backwards starting from a sentinel node.
+
+Direct acyclic graphs (DAG) or trees are examples for such cases.
+In the following, we define the Braess network as an example DAG, having edges:
+
+* A -> B
+* A -> C
+* B -> D
+* C -> D
+* B -> C (the link causing the paradox!)
+
+Such a graph could very simply constructed with an `ImpVec` where the nodes
+are connected via regular references.
+
+```rust
+use orx_imp_vec::ImpVec;
+use std::fmt::{Debug, Display};
+
+#[derive(PartialEq, Eq, Debug)]
+struct Node<'a, T> {
+    id: T,
+    target_nodes: Vec<&'a Node<'a, T>>,
+}
+impl<'a, T: Debug + Display> Display for Node<'a, T> {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        write!(
+            f,
+            "node: {}\t\tout-degree={}\tconnected-to={:?}",
+            self.id,
+            self.target_nodes.len(),
+            self.target_nodes.iter().map(|n| &n.id).collect::<Vec<_>>()
+        )
+    }
+}
+#[derive(Default)]
+struct Graph<'a, T>(ImpVec<Node<'a, T>>);
+impl<'a, T> Graph<'a, T> {
+    fn add_node(&self, id: T, target_nodes: Vec<&'a Node<'a, T>>) -> &Node<'a, T> {
+        let node = Node { id, target_nodes };
+        self.0.push_get_ref(node)
+    }
+}
+fn main() {
+    let graph = Graph::default();
+    let d = graph.add_node("D".to_string(), vec![]);
+    let c = graph.add_node("C".to_string(), vec![d]);
+    let b = graph.add_node("B".to_string(), vec![c, d]);
+    let a = graph.add_node("A".to_string(), vec![b, c]);
+
+    for node in graph.0.into_iter() {
+        println!("{}", node);
+    }
+
+    assert_eq!(2, a.target_nodes.len());
+    assert_eq!(vec![b, c], a.target_nodes);
+    assert_eq!(vec![c, d], a.target_nodes[0].target_nodes);
+    assert_eq!(vec![d], a.target_nodes[0].target_nodes[0].target_nodes);
+    assert!(a.target_nodes[0].target_nodes[0].target_nodes[0]
+        .target_nodes
+        .is_empty());
 }
 ```

@@ -1,6 +1,11 @@
+use orx_split_vec::SplitVecGrowth;
+
 use crate::ImpVec;
 
-impl<T: Clone> ImpVec<T> {
+impl<T: Clone, G> ImpVec<T, G>
+where
+    G: SplitVecGrowth<T>,
+{
     /// Clones and appends all elements in a slice to the vec.
     ///
     /// Iterates over the slice `other`, clones each element, and then appends
@@ -29,6 +34,9 @@ impl<T: Clone> ImpVec<T> {
 
         let mut slice = other;
         while !slice.is_empty() {
+            if !self.has_capacity_for_one() {
+                self.add_fragment();
+            }
             let f = fragments.len() - 1;
 
             let last = &mut fragments[f];
@@ -46,7 +54,10 @@ impl<T: Clone> ImpVec<T> {
     }
 }
 
-impl<'a, T: Clone + 'a> ImpVec<T> {
+impl<'a, T: Clone + 'a, G> ImpVec<T, G>
+where
+    G: SplitVecGrowth<T>,
+{
     /// Clones and appends all elements in the iterator to the vec.
     ///
     /// Iterates over the `iter`, clones each element, and then appends
