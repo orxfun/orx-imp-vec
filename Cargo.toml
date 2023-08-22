@@ -11,4 +11,4 @@ categories = ["data-structures"]
 
 
 [dependencies]
-orx-split-vec = "0.2.3"
+orx-split-vec = "^0.2.3"
