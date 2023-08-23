@@ -127,3 +127,46 @@ where
         &fragments[f][fragments[f].len() - 1]
     }
 }
+
+#[cfg(test)]
+mod tests {
+    use crate::{test_all_growth_types, ImpVec};
+    use orx_split_vec::SplitVecGrowth;
+
+    #[test]
+    fn push() {
+        fn test<G: SplitVecGrowth<usize>>(vec: ImpVec<usize, G>) {
+            for i in 0..462 {
+                vec.push(i);
+            }
+            for i in 0..462 {
+                assert_eq!(i, vec[i]);
+            }
+        }
+        test_all_growth_types!(test);
+    }
+
+    #[test]
+    fn push_get_ref() {
+        fn test<G: SplitVecGrowth<usize>>(vec: ImpVec<usize, G>) {
+            let mut refs = Vec::with_capacity(4062);
+            let mut addr = Vec::with_capacity(4062);
+            for i in 0..4062 {
+                let refi = vec.push_get_ref(i);
+                refs.push(refi);
+                addr.push(refi as *const usize);
+            }
+
+            for i in 0..4062 {
+                assert_eq!(i, vec[i]);
+                assert_eq!(i, *refs[i]);
+
+                let curr_addr = &vec[i] as *const usize;
+                assert_eq!(curr_addr, addr[i]);
+
+                assert_eq!(i, unsafe { *addr[i] });
+            }
+        }
+        test_all_growth_types!(test);
+    }
+}

@@ -252,5 +252,7 @@ mod extend;
 mod imp_vec;
 mod new_imp_vec;
 mod push;
+#[cfg(test)]
+pub(crate) mod test;
 
 pub use self::imp_vec::ImpVec;

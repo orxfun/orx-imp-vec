@@ -90,3 +90,93 @@ where
         }
     }
 }
+
+#[cfg(test)]
+mod tests {
+    use crate::{test_all_growth_types, ImpVec};
+    use orx_split_vec::SplitVecGrowth;
+
+    #[test]
+    fn extend_from_slice() {
+        fn test<G: SplitVecGrowth<usize>>(vec: ImpVec<usize, G>) {
+            let mut refs = Vec::with_capacity(4062);
+            let mut addr = Vec::with_capacity(4062);
+
+            vec.extend_from_slice(&(0..42).collect::<Vec<_>>());
+            for i in 0..42 {
+                let refi = &vec[i];
+                refs.push(refi);
+                addr.push(refi as *const usize);
+            }
+
+            vec.extend_from_slice(&(42..63).collect::<Vec<_>>());
+            for i in 42..63 {
+                let refi = &vec[i];
+                refs.push(refi);
+                addr.push(refi as *const usize);
+            }
+
+            vec.extend_from_slice(&(63..100).collect::<Vec<_>>());
+            for i in 63..100 {
+                let refi = &vec[i];
+                refs.push(refi);
+                addr.push(refi as *const usize);
+            }
+
+            assert_eq!(100, vec.len());
+            for i in 0..100 {
+                assert_eq!(i, vec[i]);
+
+                assert_eq!(i, *refs[i]);
+
+                let curr_addr = &vec[i] as *const usize;
+                assert_eq!(curr_addr, addr[i]);
+
+                assert_eq!(i, unsafe { *addr[i] });
+            }
+        }
+        test_all_growth_types!(test);
+    }
+
+    #[test]
+    fn push_get_ref2() {
+        fn test<G: SplitVecGrowth<usize>>(vec: ImpVec<usize, G>) {
+            let mut refs = Vec::with_capacity(4062);
+            let mut addr = Vec::with_capacity(4062);
+
+            vec.extend(&(0..42).collect::<Vec<_>>());
+            for i in 0..42 {
+                let refi = &vec[i];
+                refs.push(refi);
+                addr.push(refi as *const usize);
+            }
+
+            vec.extend(&(42..63).collect::<Vec<_>>());
+            for i in 42..63 {
+                let refi = &vec[i];
+                refs.push(refi);
+                addr.push(refi as *const usize);
+            }
+
+            vec.extend(&(53..90).map(|i| i + 10).collect::<Vec<_>>());
+            for i in 63..100 {
+                let refi = &vec[i];
+                refs.push(refi);
+                addr.push(refi as *const usize);
+            }
+
+            assert_eq!(100, vec.len());
+            for i in 0..100 {
+                assert_eq!(i, vec[i]);
+
+                assert_eq!(i, *refs[i]);
+
+                let curr_addr = &vec[i] as *const usize;
+                assert_eq!(curr_addr, addr[i]);
+
+                assert_eq!(i, unsafe { *addr[i] });
+            }
+        }
+        test_all_growth_types!(test);
+    }
+}
