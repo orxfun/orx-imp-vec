@@ -1,7 +1,7 @@
 use crate::ImpVec;
 use orx_split_vec::{
-    CustomGrowth, DoublingGrowth, ExponentialGrowth, Fragment, LinearGrowth, SplitVec,
-    SplitVecGrowth,
+    CustomGrowth, DoublingGrowth, ExponentialGrowth, FixedCapacity, Fragment, LinearGrowth,
+    SplitVec, SplitVecGrowth,
 };
 use std::rc::Rc;
 
@@ -233,5 +233,45 @@ impl<T> ImpVec<T, CustomGrowth<T>> {
         get_capacity_of_new_fragment: Rc<GetCapacityOfNewFragment<T>>,
     ) -> Self {
         SplitVec::with_custom_growth_function(get_capacity_of_new_fragment).into()
+    }
+}
+
+impl<T> ImpVec<T, FixedCapacity> {
+    /// Creates an imp-vector with the given `fixed_capacity`.
+    ///
+    /// This capacity is the hard limit and the vector cannot grow beyond it.
+    /// Attempts to exceed this limit will lead to the code to panic.
+    ///
+    /// The benefit of this strategy, on the other hand,
+    /// is its faster access by index operations;
+    /// which must be inlined and have a comparable performance
+    /// with regular slice access by index.
+    ///
+    /// Further, the pinned-memory-location of already
+    /// pushed elements feature is maintained.
+    ///
+    /// # Examples
+    ///
+    /// ```
+    /// use orx_imp_vec::ImpVec;
+    ///
+    /// // SplitVec<usize, FixedCapacity>
+    /// let vec = ImpVec::with_fixed_capacity(4);
+    ///
+    /// assert_eq!(1, vec.fragments().len());
+    /// assert_eq!(Some(4), vec.fragments().first().map(|f| f.capacity()));
+    /// assert_eq!(Some(0), vec.fragments().first().map(|f| f.len()));
+    ///
+    /// // push 4 elements to fill the vector completely
+    /// for i in 0..4 {
+    ///     vec.push(i);
+    /// }
+    /// assert_eq!(1, vec.fragments().len());
+    ///
+    /// // the next push exceeding the fixed_capacity will panic.
+    /// // vec.push(4);
+    /// ```
+    pub fn with_fixed_capacity(fixed_capacity: usize) -> Self {
+        SplitVec::with_fixed_capacity(fixed_capacity).into()
     }
 }
