@@ -254,5 +254,6 @@ mod new_imp_vec;
 mod push;
 #[cfg(test)]
 pub(crate) mod test;
+mod unsafe_get_mut;
 
 pub use self::imp_vec::ImpVec;
