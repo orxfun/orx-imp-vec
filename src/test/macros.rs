@@ -15,5 +15,7 @@ macro_rules! test_all_growth_types {
         $fun::<orx_split_vec::LinearGrowth>(ImpVec::with_linear_growth(2));
         $fun::<orx_split_vec::DoublingGrowth>(ImpVec::with_doubling_growth(2));
         $fun::<orx_split_vec::ExponentialGrowth>(ImpVec::with_exponential_growth(4, 1.5));
+        $fun::<orx_split_vec::ExponentialGrowth>(ImpVec::with_exponential_growth(4, 2.5));
+        $fun::<orx_split_vec::FixedCapacity>(ImpVec::with_fixed_capacity(5000));
     };
 }

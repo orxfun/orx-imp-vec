@@ -139,7 +139,7 @@ mod tests {
     }
 
     #[test]
-    fn push_get_ref2() {
+    fn extend() {
         fn test<G: SplitVecGrowth<usize>>(vec: ImpVec<usize, G>) {
             let mut refs = Vec::with_capacity(4062);
             let mut addr = Vec::with_capacity(4062);
