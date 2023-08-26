@@ -41,10 +41,11 @@ unless it is removed from the vector or the vector is dropped.
 Therefore, the  following `ImpVec` version compiles and preserves the validity of the references.
 
 ```rust
-use orx_imp_vec::ImpVec;
+use orx_imp_vec::prelude::*;
 
-let vec = ImpVec::with_doubling_growth(2);
-vec.extend_from_slice(&[0, 1]);
+let vec: ImpVec<_, _> = SplitVec::with_doubling_growth(2).into();
+vec.push(0);
+vec.push(1);
 
 let ref0 = &vec[0];
 let ref0_addr = ref0 as *const i32; // address before growth
@@ -75,9 +76,9 @@ Thanks to the ownership rules, all references are dropped before using these ope
 For instance, the following code safely will not compile.
 
 ```rust
-use orx_imp_vec::ImpVec;
+use orx_imp_vec::prelude::*;
 
-let mut vec = ImpVec::default(); // mut required for the insert call
+let mut vec: ImpVec<_, _> = SplitVec::with_linear_growth(4).into(); // mut required for the insert call
 
 // push the first item and hold a reference to it
 let ref0 = vec.push_get_ref(0);
@@ -89,7 +90,7 @@ vec.push(1);
 vec.insert(0, 42);
 assert_eq!(vec, &[42, 0, 1]);
 
-// therefore, this line will lead to a compiler error!!
+/ therefore, this line will lead to a compiler error!!
 // let value0 = *ref0;
 ```
 
@@ -104,7 +105,7 @@ You may see below how `ImpVec` helps to easily represent some tricky data struct
 Recall the classical [cons list example](https://doc.rust-lang.org/book/ch15-01-box.html).
 Here is the code from the book which would not compile and used to discuss challenges and introduce smart pointers.
 
-```rust
+```ignore
 enum List {
     Cons(i32, List),
     Nil,
@@ -121,18 +122,16 @@ Below is a convenient cons list implementation using `ImpVec` as a storage:
 * while simultaneously holding onto and using references to already created lists.
 
 ```rust
-use orx_imp_vec::ImpVec;
+use orx_imp_vec::prelude::*;
 
 enum List<'a, T> {
     Cons(T, &'a List<'a, T>),
     Nil,
 }
-fn main() {
-    let storage = ImpVec::default();
-    let r3 = storage.push_get_ref(List::Cons(3, &List::Nil));   // Cons(3) -> Nil
-    let r2 = storage.push_get_ref(List::Cons(2, r3));           // Cons(2) -> Cons(3)
-    let r1 = storage.push_get_ref(List::Cons(2, r2));           // Cons(2) -> Cons(1)
-}
+let storage: ImpVec<_, _> = SplitVec::with_exponential_growth(10, 1.5).into();
+let r3 = storage.push_get_ref(List::Cons(3, &List::Nil));   // Cons(3) -> Nil
+let r2 = storage.push_get_ref(List::Cons(2, r3));           // Cons(2) -> Cons(3)
+let r1 = storage.push_get_ref(List::Cons(2, r2));           // Cons(2) -> Cons(1)
 ```
 
 Alternatively, the `ImpVec` can be used only internally
@@ -142,33 +141,33 @@ The storage will keep growing seamlessly while making sure that
 all references are **thin** and **valid**.
 
 ```rust
-use orx_imp_vec::ImpVec;
+use orx_imp_vec::prelude::*;
+type ImpVecLin<T> = ImpVec<T, SplitVec<T>>;
 
 enum List<'a, T> {
     Cons(T, &'a List<'a, T>),
-    Nil(ImpVec<List<'a, T>>),
+    Nil(ImpVecLin<List<'a, T>>),
 }
 impl<'a, T> List<'a, T> {
-    fn storage(&self) -> &ImpVec<List<'a, T>> {
+    fn storage(&self) -> &ImpVecLin<List<'a, T>> {
         match self {
             List::Cons(_, list) => list.storage(),
             List::Nil(storage) => storage,
         }
     }
     pub fn nil() -> Self {
-        Self::Nil(ImpVec::default())
+        Self::Nil(ImpVecLin::default())
     }
     pub fn connect_from(&'a self, value: T) -> &Self {
         let new_list = Self::Cons(value, self);
         self.storage().push_get_ref(new_list)
     }
 }
-fn main() {
-    let nil = List::nil();          // sentinel holds the storage
-    let r3 = nil.connect_from(3);   // Cons(3) -> Nil
-    let r2 = r3.connect_from(2);    // Cons(2) -> Cons(3)
-    let r1 = r2.connect_from(1);    // Cons(2) -> Cons(1)
-}
+
+let nil = List::nil();          // sentinel holds the storage
+let r3 = nil.connect_from(3);   // Cons(3) -> Nil
+let r2 = r3.connect_from(2);    // Cons(2) -> Cons(3)
+let r1 = r2.connect_from(1);    // Cons(2) -> Cons(1)
 ```
 
 ### Directed Acyclic Graph
@@ -190,7 +189,7 @@ Such a graph could be constructed very conveniently with an `ImpVec` where the n
 are connected via regular references.
 
 ```rust
-use orx_imp_vec::ImpVec;
+use orx_imp_vec::prelude::*;
 use std::fmt::{Debug, Display};
 
 #[derive(PartialEq, Eq, Debug)]
@@ -210,30 +209,29 @@ impl<'a, T: Debug + Display> Display for Node<'a, T> {
     }
 }
 #[derive(Default)]
-struct Graph<'a, T>(ImpVec<Node<'a, T>>);
+struct Graph<'a, T>(ImpVec<Node<'a, T>, SplitVec<Node<'a, T>, DoublingGrowth>>);
 impl<'a, T> Graph<'a, T> {
     fn add_node(&self, id: T, target_nodes: Vec<&'a Node<'a, T>>) -> &Node<'a, T> {
         let node = Node { id, target_nodes };
         self.0.push_get_ref(node)
     }
 }
-fn main() {
-    let graph = Graph::default();
-    let d = graph.add_node("D".to_string(), vec![]);
-    let c = graph.add_node("C".to_string(), vec![d]);
-    let b = graph.add_node("B".to_string(), vec![c, d]);
-    let a = graph.add_node("A".to_string(), vec![b, c]);
 
-    for node in graph.0.into_iter() {
-        println!("{}", node);
-    }
+let graph = Graph::default();
+let d = graph.add_node("D".to_string(), vec![]);
+let c = graph.add_node("C".to_string(), vec![d]);
+let b = graph.add_node("B".to_string(), vec![c, d]);
+let a = graph.add_node("A".to_string(), vec![b, c]);
 
-    assert_eq!(2, a.target_nodes.len());
-    assert_eq!(vec![b, c], a.target_nodes);
-    assert_eq!(vec![c, d], a.target_nodes[0].target_nodes);
-    assert_eq!(vec![d], a.target_nodes[0].target_nodes[0].target_nodes);
-    assert!(a.target_nodes[0].target_nodes[0].target_nodes[0]
-        .target_nodes
-        .is_empty());
+for node in graph.0.into_iter() {
+    println!("{}", node);
 }
+
+assert_eq!(2, a.target_nodes.len());
+assert_eq!(vec![b, c], a.target_nodes);
+assert_eq!(vec![c, d], a.target_nodes[0].target_nodes);
+assert_eq!(vec![d], a.target_nodes[0].target_nodes[0].target_nodes);
+assert!(a.target_nodes[0].target_nodes[0].target_nodes[0]
+    .target_nodes
+    .is_empty());
 ```

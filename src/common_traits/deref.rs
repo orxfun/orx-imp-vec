@@ -1,20 +1,21 @@
-use crate::ImpVec;
-use orx_split_vec::{SplitVec, SplitVecGrowth};
 use std::ops::{Deref, DerefMut};
 
-impl<T, G> Deref for ImpVec<T, G>
+use crate::ImpVec;
+use orx_pinned_vec::PinnedVec;
+
+impl<T, P> Deref for ImpVec<T, P>
 where
-    G: SplitVecGrowth<T>,
+    P: PinnedVec<T>,
 {
-    type Target = SplitVec<T, G>;
+    type Target = P;
     fn deref(&self) -> &Self::Target {
         unsafe { &*self.as_mut_ptr() }
     }
 }
 
-impl<T, G> DerefMut for ImpVec<T, G>
+impl<T, P> DerefMut for ImpVec<T, P>
 where
-    G: SplitVecGrowth<T>,
+    P: PinnedVec<T>,
 {
     fn deref_mut(&mut self) -> &mut Self::Target {
         unsafe { &mut *self.as_mut_ptr() }

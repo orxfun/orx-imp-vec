@@ -1,10 +1,9 @@
-use orx_split_vec::SplitVecGrowth;
-
 use crate::ImpVec;
+use orx_pinned_vec::PinnedVec;
 
-impl<T, G> ImpVec<T, G>
+impl<T, P> ImpVec<T, P>
 where
-    G: SplitVecGrowth<T>,
+    P: PinnedVec<T>,
 {
     /// Appends an element to the back of a collection.
     ///
@@ -14,9 +13,9 @@ where
     /// # Examples
     ///
     /// ```
-    /// use orx_imp_vec::ImpVec;
+    /// use orx_imp_vec::prelude::*;
     ///
-    /// let vec = ImpVec::default();
+    /// let vec: ImpVec<_, _> = FixedVec::new(10).into();
     /// vec.push(1);
     /// vec.push(2);
     ///
@@ -38,18 +37,11 @@ where
     /// assert_eq!(ref_elem_addr, ref_elem_addr_after_growth);
     /// ```
     pub fn push(&self, value: T) {
-        let split_vec = unsafe { &mut *self.as_mut_ptr() };
-        let fragments = unsafe { split_vec.fragments_mut() };
-        if fragments.is_empty() {
-            self.add_fragment_with_first_value(value);
-        } else {
-            let last_f = fragments.len() - 1;
-            if fragments[last_f].has_capacity_for_one() {
-                fragments[last_f].push(value);
-            } else {
-                self.add_fragment_with_first_value(value);
-            }
-        };
+        let data = self.as_mut_ptr();
+        unsafe {
+            let pinned_vec = &mut *data;
+            pinned_vec.push(value);
+        }
     }
 
     /// Appends an element to the back of a collection and returns a reference to it.
@@ -64,9 +56,9 @@ where
     /// as long as the collection is not mutated with methods such as `insert`, `remove` or `pop`.
     ///
     /// ```
-    /// use orx_imp_vec::ImpVec;
+    /// use orx_imp_vec::prelude::*;
     ///
-    /// let vec = ImpVec::with_linear_growth(4);
+    /// let vec: ImpVec<_, _> = FixedVec::new(10).into();
     /// let ref1 = vec.push_get_ref(1);
     /// let ref_elem_addr = ref1 as *const i32;
     ///
@@ -92,9 +84,9 @@ where
     /// are not allowed.
     ///
     /// ```
-    /// use orx_imp_vec::ImpVec;
+    /// use orx_imp_vec::prelude::*;
     ///
-    /// let mut vec = ImpVec::default(); // mut required for the `insert`
+    /// let mut vec: ImpVec<_, _> = SplitVec::with_linear_growth(10).into(); // mut required for the `insert`
     /// let ref1 = vec.push_get_ref(1);
     /// vec.push(2);
     /// vec.push(3);
@@ -109,64 +101,68 @@ where
     /// // let value1 = *ref1;
     /// ```
     pub fn push_get_ref(&self, value: T) -> &T {
-        let split_vec = unsafe { &mut *self.as_mut_ptr() };
-        let fragments = unsafe { split_vec.fragments_mut() };
-        let f = if fragments.is_empty() {
-            self.add_fragment_with_first_value(value);
-            0
-        } else {
-            let last_f = fragments.len() - 1;
-            if fragments[last_f].has_capacity_for_one() {
-                fragments[last_f].push(value);
-                last_f
-            } else {
-                self.add_fragment_with_first_value(value);
-                last_f + 1
-            }
-        };
-        &fragments[f][fragments[f].len() - 1]
+        let data = self.as_mut_ptr();
+        unsafe {
+            let pinned_vec = &mut *data;
+            pinned_vec.push(value);
+            pinned_vec.get_unchecked(pinned_vec.len() - 1)
+        }
     }
 }
 
 #[cfg(test)]
 mod tests {
-    use crate::{test_all_growth_types, ImpVec};
-    use orx_split_vec::SplitVecGrowth;
+    use crate::prelude::*;
+    use crate::test_all_growth_types;
 
     #[test]
     fn push() {
-        fn test<G: SplitVecGrowth<usize>>(vec: ImpVec<usize, G>) {
-            for i in 0..462 {
-                vec.push(i);
+        fn test<P: PinnedVec<usize>>(pinned_vec: P) {
+            let imp: ImpVec<_, _> = pinned_vec.into();
+            let mut initial_refs = vec![];
+            for i in 0..1000 {
+                imp.push(i * 10);
+                initial_refs.push(&imp[i] as *const usize);
             }
-            for i in 0..462 {
-                assert_eq!(i, vec[i]);
+
+            let expected_vals: Vec<_> = (0..1000).map(|i| i * 10).collect();
+            assert_eq!(expected_vals, imp);
+
+            let mut final_refs = vec![];
+            for i in 0..1000 {
+                final_refs.push(&imp[i] as *const usize);
             }
+            assert_eq!(initial_refs, final_refs);
         }
+
         test_all_growth_types!(test);
     }
 
     #[test]
     fn push_get_ref() {
-        fn test<G: SplitVecGrowth<usize>>(vec: ImpVec<usize, G>) {
-            let mut refs = Vec::with_capacity(4062);
-            let mut addr = Vec::with_capacity(4062);
-            for i in 0..4062 {
-                let refi = vec.push_get_ref(i);
-                refs.push(refi);
-                addr.push(refi as *const usize);
+        fn test<P: PinnedVec<usize>>(pinned_vec: P) {
+            let imp: ImpVec<_, _> = pinned_vec.into();
+            let mut initial_refs = vec![];
+
+            let first_ref = imp.push_get_ref(0);
+            initial_refs.push(first_ref as *const usize);
+
+            for i in 1..1000 {
+                initial_refs.push(imp.push_get_ref(i * 10) as *const usize);
             }
 
-            for i in 0..4062 {
-                assert_eq!(i, vec[i]);
-                assert_eq!(i, *refs[i]);
+            let expected_vals: Vec<_> = (0..1000).map(|i| i * 10).collect();
+            assert_eq!(expected_vals, imp);
 
-                let curr_addr = &vec[i] as *const usize;
-                assert_eq!(curr_addr, addr[i]);
-
-                assert_eq!(i, unsafe { *addr[i] });
+            let mut final_refs = vec![];
+            for i in 0..1000 {
+                final_refs.push(&imp[i] as *const usize);
             }
+            assert_eq!(initial_refs, final_refs);
+
+            assert_eq!(0, *first_ref);
         }
+
         test_all_growth_types!(test);
     }
 }
