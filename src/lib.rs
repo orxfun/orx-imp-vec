@@ -33,7 +33,7 @@
 //! * the vector has a capacity of 2; and hence, the push will lead to an expansion of the vector's capacity;
 //! * it is possible that the underlying data will be copied to another place in memory;
 //! * in this case `ref0` will be an invalid reference and dereferencing it would lead to UB.
-
+//!
 //! However, `ImpVec` uses the `SplitVec` as its underlying data model
 //! which guarantees that the memory location of an item added to the split vector will never change
 //! unless it is removed from the vector or the vector is dropped.
@@ -41,10 +41,11 @@
 //! Therefore, the  following `ImpVec` version compiles and preserves the validity of the references.
 //!
 //! ```rust
-//! use orx_imp_vec::ImpVec;
+//! use orx_imp_vec::prelude::*;
 //!
-//! let vec = ImpVec::with_doubling_growth(2);
-//! vec.extend_from_slice(&[0, 1]);
+//! let vec: ImpVec<_, _> = SplitVec::with_doubling_growth(2).into();
+//! vec.push(0);
+//! vec.push(1);
 //!
 //! let ref0 = &vec[0];
 //! let ref0_addr = ref0 as *const i32; // address before growth
@@ -75,9 +76,9 @@
 //! For instance, the following code safely will not compile.
 //!
 //! ```rust
-//! use orx_imp_vec::ImpVec;
+//! use orx_imp_vec::prelude::*;
 //!
-//! let mut vec = ImpVec::default(); // mut required for the insert call
+//! let mut vec: ImpVec<_, _> = SplitVec::with_linear_growth(4).into(); // mut required for the insert call
 //!
 //! // push the first item and hold a reference to it
 //! let ref0 = vec.push_get_ref(0);
@@ -121,13 +122,13 @@
 //! * while simultaneously holding onto and using references to already created lists.
 //!
 //! ```rust
-//! use orx_imp_vec::ImpVec;
+//! use orx_imp_vec::prelude::*;
 //!
 //! enum List<'a, T> {
 //!     Cons(T, &'a List<'a, T>),
 //!     Nil,
 //! }
-//! let storage = ImpVec::default();
+//! let storage: ImpVec<_, _> = SplitVec::with_exponential_growth(10, 1.5).into();
 //! let r3 = storage.push_get_ref(List::Cons(3, &List::Nil));   // Cons(3) -> Nil
 //! let r2 = storage.push_get_ref(List::Cons(2, r3));           // Cons(2) -> Cons(3)
 //! let r1 = storage.push_get_ref(List::Cons(2, r2));           // Cons(2) -> Cons(1)
@@ -140,21 +141,22 @@
 //! all references are **thin** and **valid**.
 //!
 //! ```rust
-//! use orx_imp_vec::ImpVec;
+//! use orx_imp_vec::prelude::*;
+//! type ImpVecLin<T> = ImpVec<T, SplitVec<T>>;
 //!
 //! enum List<'a, T> {
 //!     Cons(T, &'a List<'a, T>),
-//!     Nil(ImpVec<List<'a, T>>),
+//!     Nil(ImpVecLin<List<'a, T>>),
 //! }
 //! impl<'a, T> List<'a, T> {
-//!     fn storage(&self) -> &ImpVec<List<'a, T>> {
+//!     fn storage(&self) -> &ImpVecLin<List<'a, T>> {
 //!         match self {
 //!             List::Cons(_, list) => list.storage(),
 //!             List::Nil(storage) => storage,
 //!         }
 //!     }
 //!     pub fn nil() -> Self {
-//!         Self::Nil(ImpVec::default())
+//!         Self::Nil(ImpVecLin::default())
 //!     }
 //!     pub fn connect_from(&'a self, value: T) -> &Self {
 //!         let new_list = Self::Cons(value, self);
@@ -187,7 +189,7 @@
 //! are connected via regular references.
 //!
 //! ```rust
-//! use orx_imp_vec::ImpVec;
+//! use orx_imp_vec::prelude::*;
 //! use std::fmt::{Debug, Display};
 //!
 //! #[derive(PartialEq, Eq, Debug)]
@@ -207,7 +209,7 @@
 //!     }
 //! }
 //! #[derive(Default)]
-//! struct Graph<'a, T>(ImpVec<Node<'a, T>>);
+//! struct Graph<'a, T>(ImpVec<Node<'a, T>, SplitVec<Node<'a, T>, DoublingGrowth>>);
 //! impl<'a, T> Graph<'a, T> {
 //!     fn add_node(&self, id: T, target_nodes: Vec<&'a Node<'a, T>>) -> &Node<'a, T> {
 //!         let node = Node { id, target_nodes };
@@ -246,14 +248,14 @@
     clippy::todo
 )]
 
-mod deref;
-mod eq;
-mod extend;
+mod common_traits;
+//mod get_mut;
 mod imp_vec;
-mod new_imp_vec;
+mod index;
+/// Common traits, structs, enums.
+pub mod prelude;
 mod push;
-#[cfg(test)]
-pub(crate) mod test;
-mod unsafe_get_mut;
+mod test;
 
-pub use self::imp_vec::ImpVec;
+pub use common_traits::iter::iterator::{ImpVecIter, ImpVecIterMut};
+pub use imp_vec::ImpVec;
