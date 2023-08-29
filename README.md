@@ -90,7 +90,7 @@ vec.push(1);
 vec.insert(0, 42);
 assert_eq!(vec, &[42, 0, 1]);
 
-/ therefore, this line will lead to a compiler error!!
+// therefore, this line will lead to a compiler error!!
 // let value0 = *ref0;
 ```
 
@@ -124,14 +124,47 @@ Below is a convenient cons list implementation using `ImpVec` as a storage:
 ```rust
 use orx_imp_vec::prelude::*;
 
+#[derive(Debug)]
 enum List<'a, T> {
     Cons(T, &'a List<'a, T>),
     Nil,
 }
-let storage: ImpVec<_, _> = SplitVec::with_exponential_growth(10, 1.5).into();
-let r3 = storage.push_get_ref(List::Cons(3, &List::Nil));   // Cons(3) -> Nil
-let r2 = storage.push_get_ref(List::Cons(2, r3));           // Cons(2) -> Cons(3)
-let r1 = storage.push_get_ref(List::Cons(2, r2));           // Cons(2) -> Cons(1)
+impl<'a, T: PartialEq> PartialEq for List<'a, T> {
+    // compare references
+    fn eq(&self, other: &Self) -> bool {
+        let ptr_eq =
+            |l1, r1| std::ptr::eq(l1 as *const &'a List<'a, T>, r1 as *const &'a List<'a, T>);
+        match (self, other) {
+            (Self::Cons(l0, l1), Self::Cons(r0, r1)) => l0 == r0 && ptr_eq(l1, r1),
+            _ => core::mem::discriminant(self) == core::mem::discriminant(other),
+        }
+    }
+}
+impl<'a, T> List<'a, T> {
+    fn cons(&self) -> Option<&'a List<'a, T>> {
+        match self {
+            List::Nil => None,
+            List::Cons(_, x) => Some(*x),
+        }
+    }
+}
+
+let lists: ImpVec<_, _> = SplitVec::with_exponential_growth(10, 1.5).into();
+let nil = lists.push_get_ref(List::Nil); // Nil
+let r3 = lists.push_get_ref(List::Cons(3, nil)); // Cons(3) -> Nil
+let r2 = lists.push_get_ref(List::Cons(42, r3)); // Cons(42) -> Cons(3)
+let r1 = lists.push_get_ref(List::Cons(42, r2)); // Cons(42) -> Cons(42)
+
+assert_eq!(r1.cons(), Some(r2));
+assert_eq!(r2.cons(), Some(r3));
+assert_eq!(r3.cons(), Some(nil));
+assert_eq!(nil.cons(), None);
+
+// use index in the outer collection
+assert_eq!(r1, &lists[3]);
+
+// both are Cons variant with value 42; however, pointing to different list
+assert_ne!(r2, r3);
 ```
 
 Alternatively, the `ImpVec` can be used only internally
@@ -190,18 +223,18 @@ are connected via regular references.
 
 ```rust
 use orx_imp_vec::prelude::*;
-use std::fmt::{Debug, Display};
+use std::fmt::Debug;
 
-#[derive(PartialEq, Eq, Debug)]
+#[derive(PartialEq, Eq)]
 struct Node<'a, T> {
     id: T,
     target_nodes: Vec<&'a Node<'a, T>>,
 }
-impl<'a, T: Debug + Display> Display for Node<'a, T> {
+impl<'a, T: Debug> Debug for Node<'a, T> {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         write!(
             f,
-            "node: {}\t\tout-degree={}\tconnected-to={:?}",
+            "node({:?})\t\tout-degree={}\t\tconnected-to={:?}",
             self.id,
             self.target_nodes.len(),
             self.target_nodes.iter().map(|n| &n.id).collect::<Vec<_>>()
@@ -224,7 +257,7 @@ let b = graph.add_node("B".to_string(), vec![c, d]);
 let a = graph.add_node("A".to_string(), vec![b, c]);
 
 for node in graph.0.into_iter() {
-    println!("{}", node);
+    println!("{:?}", node);
 }
 
 assert_eq!(2, a.target_nodes.len());

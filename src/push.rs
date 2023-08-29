@@ -43,7 +43,12 @@ where
             pinned_vec.push(value);
         }
     }
+}
 
+impl<'a, T, P> ImpVec<T, P>
+where
+    P: PinnedVec<T> + 'a,
+{
     /// Appends an element to the back of a collection and returns a reference to it.
     ///
     /// The reference will always be valid unless the collection is mutated;
@@ -100,7 +105,10 @@ where
     /// // below line does not compile as the 'insert' call breaks reference 'ref1'
     /// // let value1 = *ref1;
     /// ```
-    pub fn push_get_ref(&self, value: T) -> &T {
+    pub fn push_get_ref<'b>(&'b self, value: T) -> &'a T
+    where
+        'a: 'b,
+    {
         let data = self.as_mut_ptr();
         unsafe {
             let pinned_vec = &mut *data;
@@ -112,8 +120,11 @@ where
 
 #[cfg(test)]
 mod tests {
+    use std::fmt::Debug;
+
     use crate::prelude::*;
     use crate::test_all_growth_types;
+    use crate::test_all_pinned_types;
 
     #[test]
     fn push() {
@@ -135,7 +146,7 @@ mod tests {
             assert_eq!(initial_refs, final_refs);
         }
 
-        test_all_growth_types!(test);
+        test_all_pinned_types!(test);
     }
 
     #[test]
@@ -161,6 +172,187 @@ mod tests {
             assert_eq!(initial_refs, final_refs);
 
             assert_eq!(0, *first_ref);
+        }
+
+        test_all_pinned_types!(test);
+    }
+
+    // cons-list
+    #[derive(Debug)]
+    enum List<'a, T> {
+        Cons(T, &'a List<'a, T>),
+        Nil,
+    }
+    impl<'a, T> List<'a, T> {
+        fn cons(&self) -> Option<&'a List<'a, T>> {
+            match self {
+                List::Nil => None,
+                List::Cons(_, x) => Some(*x),
+            }
+        }
+    }
+    impl<'a, T: PartialEq> PartialEq for List<'a, T> {
+        fn eq(&self, other: &Self) -> bool {
+            match (self, other) {
+                (Self::Cons(l0, l1), Self::Cons(r0, r1)) => {
+                    l0 == r0
+                        && std::ptr::eq(l1 as *const &'a List<'a, T>, r1 as *const &'a List<'a, T>)
+                }
+                _ => core::mem::discriminant(self) == core::mem::discriminant(other),
+            }
+        }
+    }
+    type MyList<'a> = List<'a, usize>;
+    #[test]
+    fn make_cons_list() {
+        fn test<'a, P>(pinned_vec: P)
+        where
+            P: PinnedVec<MyList<'a>> + 'a,
+        {
+            fn lists_maker<'a, P>(pinned_vec: P) -> ImpVec<MyList<'a>, P>
+            where
+                P: PinnedVec<MyList<'a>> + 'a,
+            {
+                let lists: ImpVec<MyList<'a>, P> = pinned_vec.into();
+                let r0 = lists.push_get_ref(List::Nil);
+                let r1 = lists.push_get_ref(List::Cons(1, r0));
+                let r2 = lists.push_get_ref(List::Cons(2, r1));
+                lists.push(List::Cons(3, r2));
+                lists
+            }
+
+            // data
+            let lists = lists_maker(pinned_vec);
+            assert!(matches!(lists[0], List::Nil));
+            assert!(matches!(lists[1], List::Cons(1, _)));
+            assert!(matches!(lists[2], List::Cons(2, _)));
+            assert!(matches!(lists[3], List::Cons(3, _)));
+
+            // references
+            assert_eq!(lists[0].cons(), None);
+            assert_eq!(lists[1].cons(), Some(&lists[0]));
+            assert_eq!(lists[2].cons(), Some(&lists[1]));
+            assert_eq!(lists[3].cons(), Some(&lists[2]));
+
+            // ptr-eq
+            let cons_ptrs: Vec<_> = lists
+                .iter()
+                .map(|x| x.cons().map(|x| x as *const MyList<'a>))
+                .collect();
+            assert!(std::ptr::eq(
+                cons_ptrs[1].expect("-"),
+                &lists[0] as *const MyList<'a>
+            ));
+            assert!(std::ptr::eq(
+                cons_ptrs[2].expect("-"),
+                &lists[1] as *const MyList<'a>
+            ));
+            assert!(std::ptr::eq(
+                cons_ptrs[3].expect("-"),
+                &lists[2] as *const MyList<'a>
+            ));
+        }
+
+        test_all_pinned_types!(test);
+    }
+
+    #[test]
+    fn make_cons_list_as_pinned() {
+        fn test<'a, G>(pinned_vec: SplitVec<MyList<'a>, G>)
+        where
+            G: SplitVecGrowth<MyList<'a>> + 'a,
+        {
+            fn lists_maker<'a, G>(pinned_vec: SplitVec<MyList<'a>, G>) -> SplitVec<MyList<'a>, G>
+            where
+                G: SplitVecGrowth<MyList<'a>> + 'a,
+            {
+                let lists: ImpVec<_, _> = pinned_vec.into();
+                let r0 = lists.push_get_ref(List::Nil);
+                let r1 = lists.push_get_ref(List::Cons(1, r0));
+                let r2 = lists.push_get_ref(List::Cons(2, r1));
+                lists.push(List::Cons(3, r2));
+                lists.into()
+            }
+
+            // data
+            let lists = lists_maker(pinned_vec);
+            assert!(matches!(lists[0], List::Nil));
+            assert!(matches!(lists[1], List::Cons(1, _)));
+            assert!(matches!(lists[2], List::Cons(2, _)));
+            assert!(matches!(lists[3], List::Cons(3, _)));
+
+            // references
+            assert_eq!(lists[0].cons(), None);
+            assert_eq!(lists[1].cons(), Some(&lists[0]));
+            assert_eq!(lists[2].cons(), Some(&lists[1]));
+            assert_eq!(lists[3].cons(), Some(&lists[2]));
+
+            // ptr-eq
+            let cons_ptrs: Vec<_> = lists
+                .into_iter()
+                .map(|x| x.cons().map(|x| x as *const MyList<'a>))
+                .collect();
+            assert!(std::ptr::eq(
+                cons_ptrs[1].expect("-"),
+                &lists[0] as *const MyList<'a>
+            ));
+            assert!(std::ptr::eq(
+                cons_ptrs[2].expect("-"),
+                &lists[1] as *const MyList<'a>
+            ));
+            assert!(std::ptr::eq(
+                cons_ptrs[3].expect("-"),
+                &lists[2] as *const MyList<'a>
+            ));
+        }
+
+        test_all_growth_types!(test);
+    }
+
+    #[test]
+    fn make_cons_list_as_pinned_long() {
+        fn test<'a, G>(pinned_vec: SplitVec<MyList<'a>, G>)
+        where
+            G: SplitVecGrowth<MyList<'a>> + 'a,
+        {
+            fn lists_maker<'a, G>(pinned_vec: SplitVec<MyList<'a>, G>) -> SplitVec<MyList<'a>, G>
+            where
+                G: SplitVecGrowth<MyList<'a>> + 'a,
+            {
+                let lists: ImpVec<_, _> = pinned_vec.into();
+                let mut last = lists.push_get_ref(List::Nil);
+                for i in 1..10000 {
+                    last = lists.push_get_ref(List::Cons(i, last));
+                }
+                lists.into()
+            }
+
+            let lists = lists_maker(pinned_vec);
+            assert_eq!(10000, lists.len());
+
+            // data
+            assert!(matches!(lists[0], List::Nil));
+            for i in 1..10000 {
+                assert!(matches!(lists[i], List::Cons(_, _)));
+            }
+
+            // references
+            assert_eq!(lists[0].cons(), None);
+            for i in 1..10000 {
+                assert_eq!(lists[i].cons(), Some(&lists[i - 1]));
+            }
+
+            // ptr-eq
+            let cons_ptrs: Vec<_> = lists
+                .into_iter()
+                .map(|x| x.cons().map(|x| x as *const MyList<'a>))
+                .collect();
+            for i in 1..10000 {
+                assert!(std::ptr::eq(
+                    cons_ptrs[i].expect("-"),
+                    &lists[i - 1] as *const MyList<'a>
+                ));
+            }
         }
 
         test_all_growth_types!(test);

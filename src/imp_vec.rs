@@ -49,7 +49,7 @@ mod tests {
     use std::cell::RefCell;
 
     use crate::prelude::*;
-    use crate::test_all_growth_types;
+    use crate::test_all_pinned_types;
 
     #[test]
     fn as_mut_ptr() {
@@ -63,7 +63,7 @@ mod tests {
             assert_eq!(ptr, imp.as_mut_ptr());
         }
 
-        test_all_growth_types!(test);
+        test_all_pinned_types!(test);
     }
 
     #[test]
@@ -90,6 +90,6 @@ mod tests {
             assert_eq!(vec_from_pinned, vec_from_pinned_back);
         }
 
-        test_all_growth_types!(test);
+        test_all_pinned_types!(test);
     }
 }

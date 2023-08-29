@@ -23,7 +23,7 @@ where
 #[cfg(test)]
 mod tests {
     use crate::prelude::*;
-    use crate::test_all_growth_types;
+    use crate::test_all_pinned_types;
 
     #[test]
     fn index() {
@@ -39,7 +39,7 @@ mod tests {
             }
         }
 
-        test_all_growth_types!(test);
+        test_all_pinned_types!(test);
     }
 
     #[test]
@@ -60,6 +60,6 @@ mod tests {
             }
         }
 
-        test_all_growth_types!(test);
+        test_all_pinned_types!(test);
     }
 }

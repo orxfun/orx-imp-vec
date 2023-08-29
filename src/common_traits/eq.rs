@@ -55,7 +55,7 @@ where
 #[cfg(test)]
 mod tests {
     use crate::prelude::*;
-    use crate::test_all_growth_types;
+    use crate::test_all_pinned_types;
 
     #[test]
     fn eq_with_imp() {
@@ -75,7 +75,7 @@ mod tests {
             assert_ne!(imp2, imp1);
         }
 
-        test_all_growth_types!(test);
+        test_all_pinned_types!(test);
     }
 
     #[test]
@@ -94,7 +94,7 @@ mod tests {
             assert_eq!(imp, &vec);
         }
 
-        test_all_growth_types!(test);
+        test_all_pinned_types!(test);
     }
 
     #[test]
@@ -108,7 +108,7 @@ mod tests {
             assert_eq!(imp, &[0, 1, 2, 3]);
         }
 
-        test_all_growth_types!(test);
+        test_all_pinned_types!(test);
     }
 
     #[test]
@@ -122,6 +122,6 @@ mod tests {
             assert_eq!(imp, [0, 1, 2, 3]);
         }
 
-        test_all_growth_types!(test);
+        test_all_pinned_types!(test);
     }
 }

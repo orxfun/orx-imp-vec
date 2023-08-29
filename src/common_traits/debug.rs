@@ -16,7 +16,7 @@ where
 #[cfg(test)]
 mod tests {
     use crate::prelude::*;
-    use crate::test_all_growth_types;
+    use crate::test_all_pinned_types;
     use std::fmt::Debug;
 
     #[test]
@@ -31,6 +31,6 @@ mod tests {
             assert_eq!(expected_debug, format!("{:?}", imp));
         }
 
-        test_all_growth_types!(test);
+        test_all_pinned_types!(test);
     }
 }

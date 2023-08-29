@@ -95,7 +95,7 @@ where
 #[cfg(test)]
 mod tests {
     use crate::prelude::*;
-    use crate::test_all_growth_types;
+    use crate::test_all_pinned_types;
 
     #[test]
     fn iter_mut() {
@@ -119,7 +119,7 @@ mod tests {
             }
         }
 
-        test_all_growth_types!(test);
+        test_all_pinned_types!(test);
     }
 
     #[test]
@@ -141,6 +141,6 @@ mod tests {
             get_into_iter(&imp);
         }
 
-        test_all_growth_types!(test);
+        test_all_pinned_types!(test);
     }
 }
