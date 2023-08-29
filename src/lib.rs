@@ -40,7 +40,7 @@
 //! * it is possible that the underlying data will be copied to another place in memory;
 //! * in this case `ref0` will be an invalid reference and dereferencing it would lead to UB.
 //!
-//! However, `ImpVec` uses the `SplitVec` as its underlying data model
+//! However, `ImpVec` uses a `PinnedVec` as its underlying data model
 //! which guarantees that the memory location of an item added to the split vector will never change
 //! unless it is removed from the vector or the vector is dropped.
 //!
@@ -285,7 +285,7 @@
 //!
 //! In addition, using the unsafe `get_mut` method,
 //! cyclic self referencing vectors can be represented.
-//! Consider for isntance, the following example where
+//! Consider for instance, the following example where
 //! the vector contains two points pointing to each other.
 //! This cyclic relation can be represented with the unsafe call to the `get_mut` method.
 //!

@@ -285,7 +285,7 @@ provided that the references are acyclic.
 
 In addition, using the unsafe `get_mut` method,
 cyclic self referencing vectors can be represented.
-Consider for isntance, the following example where
+Consider for instance, the following example where
 the vector contains two points pointing to each other.
 This cyclic relation can be represented with the unsafe call to the `get_mut` method.
 
