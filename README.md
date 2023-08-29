@@ -94,9 +94,11 @@ assert_eq!(vec, &[42, 0, 1]);
 // let value0 = *ref0;
 ```
 
-## Practicality
+## Practicality - Self referencing vectors
 
 Being able to safely push to a collection with an immutable reference turns out to be very useful.
+Self-referencing vectors can be conveniently built;
+in particular, vectors where elements hold a reference to other elements of the vector.
 
 You may see below how `ImpVec` helps to easily represent some tricky data structures.
 
@@ -267,4 +269,50 @@ assert_eq!(vec![d], a.target_nodes[0].target_nodes[0].target_nodes);
 assert!(a.target_nodes[0].target_nodes[0].target_nodes[0]
     .target_nodes
     .is_empty());
+```
+
+### Practicality (unsafe) - Cyclic References
+
+As it has become apparent from the previous example,
+self referencing vectors can easily and conveniently be represented and built using an `ImpVec`
+provided that the references are acyclic.
+
+In addition, using the unsafe `get_mut` method,
+cyclic self referencing vectors can be represented.
+Consider for isntance, the following example where
+the vector contains two points pointing to each other.
+This cyclic relation can be represented with the unsafe call to the `get_mut` method.
+
+```rust
+use orx_imp_vec::prelude::*;
+
+struct Point<'a, T> {
+    data: T,
+    next: Option<&'a Point<'a, T>>,
+}
+
+// cyclic reference of two points: Point(even) <--> Point(odd)
+let even_odd: ImpVec<_, _> = FixedVec::new(2).into();
+
+let even = even_odd.push_get_ref(Point {
+    data: 'e',
+    next: None, /*none for now*/
+});
+let odd = even_odd.push_get_ref(Point {
+    data: 'o',
+    next: Some(even),
+});
+
+// close the circle
+unsafe { even_odd.get_mut(0) }.unwrap().next = Some(odd);
+
+let mut curr = even;
+for i in 0..42 {
+    if i % 2 == 0 {
+        assert_eq!('e', curr.data);
+    } else {
+        assert_eq!('o', curr.data);
+    }
+    curr = curr.next.unwrap();
+}
 ```
