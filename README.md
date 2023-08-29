@@ -1,13 +1,19 @@
 # orx-imp-vec
 
-An `ImpVec` uses [`SplitVec`](https://crates.io/crates/orx-split-vec) as the underlying data model,
+An `ImpVec` wraps a vector implementing [`PinnedVec`](https://crates.io/crates/orx-pinned-vec),
 and hence, inherits the following features:
 
 * vector growth does not require memory copies,
-* therefore, growth does not cause the memory locations of elements to change, and
-* provides flexible strategies to explicitly define how the vector should grow.
+* therefore, growth does not cause the memory locations of elements to change
 
-Additionally, `ImpVec` allows to push to or extend the vector with an immutable reference;
+Two main implementations are:
+
+* [`SplitVec`](https://crates.io/crates/orx-split-vec) which allows for 
+flexible strategies to explicitly define how the vector should grow, and
+* [`FixedVec`](https://crates.io/crates/orx-fixed-vec) with a hard capacity
+while providing the speed of a standard vector.
+
+In addition, `ImpVec` wrapper allows to push to or extend the vector with an immutable reference;
 hence, it gets the name `ImpVec`:
 
 * imp-vec stands for 'immutable push vector',
