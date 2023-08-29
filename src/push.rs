@@ -120,11 +120,10 @@ where
 
 #[cfg(test)]
 mod tests {
-    use std::fmt::Debug;
-
     use crate::prelude::*;
     use crate::test_all_growth_types;
     use crate::test_all_pinned_types;
+    use std::fmt::Debug;
 
     #[test]
     fn push() {
