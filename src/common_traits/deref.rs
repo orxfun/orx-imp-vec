@@ -1,7 +1,6 @@
-use std::ops::{Deref, DerefMut};
-
 use crate::ImpVec;
 use orx_pinned_vec::PinnedVec;
+use std::ops::{Deref, DerefMut};
 
 impl<T, P> Deref for ImpVec<T, P>
 where

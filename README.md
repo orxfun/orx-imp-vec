@@ -1,25 +1,46 @@
 # orx-imp-vec
 
 An `ImpVec` wraps a vector implementing [`PinnedVec`](https://crates.io/crates/orx-pinned-vec),
-and hence, inherits the following features:
+and hence, inherits the following feature:
 
-* vector growth does not require memory copies,
-* therefore, growth does not cause the memory locations of elements to change
+* the data stays **pinned** in place; i.e., memory location of an item added to the vector
+will never change unless the vector is dropped or cleared.
 
-Two main implementations are:
+Two main `PinnedVec` implementations which can be converted into an `ImpVec` are:
 
 * [`SplitVec`](https://crates.io/crates/orx-split-vec) which allows for 
 flexible strategies to explicitly define how the vector should grow, and
-* [`FixedVec`](https://crates.io/crates/orx-fixed-vec) with a hard capacity
+* [`FixedVec`](https://crates.io/crates/orx-fixed-vec) with a strict predetermined capacity
 while providing the speed of a standard vector.
 
-In addition, `ImpVec` wrapper allows to push to or extend the vector with an immutable reference;
-hence, it gets the name `ImpVec`:
+Making use of the interior mutability and pinned elements property of the underlying pinned vector,
+an `ImpVec` allows to safely push to or extend the vector with an **immutable reference**;
+hence, it gets the name `ImpVec` standing for 'immutable push vector'.
+It also hints for the little evil behavior 👿 it has.
 
-* imp-vec stands for 'immutable push vector',
-* and also hints for the little evil behavior it has.
+## Main goal
 
-## Safety-1
+The main purpose of `PinnedVec` implementations is to represent complex data structures,
+child structures of which often holds references to each other.
+This is a common and useful property to represent structures such as trees and graphs.
+Pinned vector represents such structures while keeping the child structures in a vector-like
+layout.
+Compared to alternative representations with smart pointers, this representation provides
+the following advantages:
+
+* holding children close to each other provides better cache locality,
+* reduces heap allocations and utilizes **thin** references rather than wide pointers,
+* while still guaranteeing that the references will remain valid.
+
+The `ImpVec`, on the other hand, wraps the `PinnedVec` and allows the vector to grow safely
+with an immutable reference using interior mutability.
+This enables building complex data structures represented as vectors with self referencing
+elements.
+
+Eventually, the `ImpVec` can be converted back to its underlying `PinnedVec`
+to drop interior mutability and reduce the level of abstraction.
+
+## Safety: immutable push
 
 Pushing to a vector with an immutable reference sounds unsafe;
 however, `ImpVec` provides the safety guarantees.
@@ -35,16 +56,16 @@ vec.push(2);
 // let value0 = *ref0; // does not compile!
 ```
 
-Why does `push` invalidate the reference to the first element which is already pushed to the vector?
-* the vector has a capacity of 2; and hence, the push will lead to an expansion of the vector's capacity;
+Why does `push` invalidate the reference to the first element?
+* the vector has a capacity of 2; and hence, the push leads to an expansion of the vector's capacity;
 * it is possible that the underlying data will be copied to another place in memory;
-* in this case `ref0` will be an invalid reference and dereferencing it would lead to UB.
+* in this case `ref0` will be an invalid reference and dereferencing it would lead to an undefined behavior (UB).
 
-However, `ImpVec` uses the `SplitVec` as its underlying data model
-which guarantees that the memory location of an item added to the split vector will never change
-unless it is removed from the vector or the vector is dropped.
+However, `ImpVec` uses the `PinnedVec` as its underlying data
+which guarantees that the memory location of an item added to the vector will never change
+unless the vector is dropped or cleared.
 
-Therefore, the  following `ImpVec` version compiles and preserves the validity of the references.
+Therefore, the following `ImpVec` version compiles and preserves the validity of the references.
 
 ```rust
 use orx_imp_vec::prelude::*;
@@ -67,14 +88,13 @@ let value0 = *ref0;
 assert_eq!(value0, 0);
 ```
 
-## Safety-2
+## Safety: reference breaking mutations
 
 On the other hand, the following operations would change the memory locations
 of elements of the vector:
 
 * `insert`ing an element to an arbitrary location of the vector,
-* `pop`ping or `remove`ing from the vector, or
-* `clear`ing the vector.
+* `pop`ping or `remove`ing from the vector.
 
 Therefore, similar to `Vec`, these operations require a mutable reference of `ImpVec`.
 Thanks to the ownership rules, all references are dropped before using these operations.
@@ -99,6 +119,55 @@ assert_eq!(vec, &[42, 0, 1]);
 // therefore, this line will lead to a compiler error!!
 // let value0 = *ref0;
 ```
+
+## Safety: reference breaking mutations for self referencing vectors
+
+On the other hand, when the element type is not a `NotSelfRefVecItem`,
+the above-mentioned mutations become more dangerous.
+
+Consider the following example.
+
+```rust
+use crate::prelude::*;
+
+struct Person<'a> {
+    name: String,
+    helps: Option<&'a Person<'a>>,
+}
+
+let mut people: ImpVec<_, _> = SplitVec::with_linear_growth(4).into();
+
+let john = people.push_get_ref(Person {
+    name: String::from("john"),
+    helps: None,
+});
+people.push(Person {
+    name: String::from("jane"),
+    helps: Some(john),
+});
+
+assert_eq!(None, people[0].helps.map(|x| x.name.as_str()));
+assert_eq!(Some("john"), people[1].helps.map(|x| x.name.as_str()));
+```
+
+Note that `Person` type is a self referencing vector item;
+and hence, is not a `NotSelfRefVecItem`.
+
+In the built `people` vector, jane helps john;
+which is represented as `people[1]` helps `people[0]`.
+
+Now assume that we call `people.insert(0, mary)`.
+After this operation, the vector would be `[mary, john, jane]` breaking the relation between john and jane:
+
+* `people[1]` helps `people[0]` would now correspond to john helps mary, which is incorrect.
+
+In addition to incorrectness, `remove` and `pop` operations could further lead to undefined behavior.
+
+For this particular reason,
+these methods are not available when the element type is not `NotSelfRefVecItem`.
+Instead, there exist **unsafe** counterparts such as `unsafe_insert`.
+
+For similar reasons, `clone` is only available when the element type is `NotSelfRefVecItem`.
 
 ## Practicality - Self referencing vectors
 
@@ -249,8 +318,10 @@ impl<'a, T: Debug> Debug for Node<'a, T> {
         )
     }
 }
+
 #[derive(Default)]
 struct Graph<'a, T>(ImpVec<Node<'a, T>, SplitVec<Node<'a, T>, DoublingGrowth>>);
+
 impl<'a, T> Graph<'a, T> {
     fn add_node(&self, id: T, target_nodes: Vec<&'a Node<'a, T>>) -> &Node<'a, T> {
         let node = Node { id, target_nodes };
