@@ -1,6 +1,6 @@
 [package]
 name = "orx-imp-vec"
-version = "0.8.3"
+version = "0.8.4"
 edition = "2021"
 authors = ["orxfun <orx.ugur.arikan@gmail.com>"]
 description = "`ImpVec` stands for 'immutable-push-vec'. It wraps a `orx_pinned_vec::PinnedVec`, enabling push/extend operations with an immutable reference and allowing for building self-referencing vectors."
@@ -10,6 +10,6 @@ keywords = ["vec", "array", "split", "fragments", "pinned"]
 categories = ["data-structures"]
 
 [dependencies]
-orx-fixed-vec = "0.1.1"
-orx-pinned-vec = "0.1.1"
-orx-split-vec = "0.6.2"
+orx-fixed-vec = "0.2.1"
+orx-pinned-vec = "0.3.1"
+orx-split-vec = "0.7.0"
