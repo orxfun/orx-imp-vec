@@ -1,9 +1,9 @@
 use crate::ImpVec;
 use orx_pinned_vec::PinnedVec;
 
-impl<T, P> ImpVec<T, P>
+impl<'a, T, P> ImpVec<T, P>
 where
-    P: PinnedVec<T>,
+    P: PinnedVec<T> + 'a,
 {
     /// Returns a mutable reference to the item at the `index`-th position of the vector;
     /// returns None if index is out of bounds.
@@ -88,11 +88,41 @@ where
     ///     &x.next.unwrap().next.unwrap().next.unwrap() // x -> y -> z -> x
     /// );
     /// ```
-    pub unsafe fn get_mut(&self, index: usize) -> Option<&mut T> {
+    pub unsafe fn get_mut<'b>(&self, index: usize) -> Option<&'a mut T>
+    where
+        'a: 'b,
+    {
         let data = self.as_mut_ptr();
         unsafe {
             let pinned_vec = &mut *data;
             pinned_vec.get_mut(index)
+        }
+    }
+
+    /// Returns a reference to the item at the `index`-th position of the vector;
+    /// returns None if index is out of bounds.
+    ///
+    /// The main purpose of this method is to be able to build vectors
+    /// elements of which reference other elements,
+    /// while these references lead to cyclic relations.
+    ///
+    /// # Safety
+    ///
+    /// This method allows to mutate an existing element of the vector
+    /// with an immutable reference.
+    /// For obvious reasons, this operation is not safe.
+    /// Therefore, it is important that this method is used in limited
+    /// scopes, where the caller is able to guarantee the safety
+    /// of the call.
+    /// See the `get_mut` examples related to safety.
+    pub unsafe fn get_ref<'b>(&self, index: usize) -> Option<&'b T>
+    where
+        'a: 'b,
+    {
+        let data = self.as_mut_ptr();
+        unsafe {
+            let pinned_vec = &mut *data;
+            pinned_vec.get(index)
         }
     }
 }
