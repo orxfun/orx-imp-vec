@@ -117,7 +117,7 @@
 //! Consider the following example.
 //!
 //! ```rust
-//! use crate::prelude::*;
+//! use orx_imp_vec::prelude::*;
 //!
 //! struct Person<'a> {
 //!     name: String,
