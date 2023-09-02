@@ -88,7 +88,7 @@ where
     ///     &x.next.unwrap().next.unwrap().next.unwrap() // x -> y -> z -> x
     /// );
     /// ```
-    pub unsafe fn get_mut<'b>(&self, index: usize) -> Option<&'a mut T>
+    pub(crate) unsafe fn get_mut<'b>(&self, index: usize) -> Option<&'a mut T>
     where
         'a: 'b,
     {
@@ -115,7 +115,7 @@ where
     /// scopes, where the caller is able to guarantee the safety
     /// of the call.
     /// See the `get_mut` examples related to safety.
-    pub unsafe fn get_ref<'b>(&self, index: usize) -> Option<&'b T>
+    pub(crate) unsafe fn get_ref<'b>(&self, index: usize) -> Option<&'b T>
     where
         'a: 'b,
     {
