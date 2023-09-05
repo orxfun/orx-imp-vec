@@ -5,7 +5,7 @@ use orx_pinned_vec::PinnedVec;
 ///
 /// Temporary naive implementation.
 #[derive(Debug, Clone)]
-pub struct ImpVecIter<'a, T, P>
+pub struct Iter<'a, T, P>
 where
     P: PinnedVec<T>,
 {
@@ -16,7 +16,7 @@ where
 ///
 /// Temporary naive implementation.
 #[derive(Debug)]
-pub struct ImpVecIterMut<'a, T, P>
+pub struct IterMut<'a, T, P>
 where
     P: PinnedVec<T>,
 {
@@ -24,7 +24,7 @@ where
     pub(crate) i: usize,
 }
 
-impl<'a, T, P> Iterator for ImpVecIter<'a, T, P>
+impl<'a, T, P> Iterator for Iter<'a, T, P>
 where
     P: PinnedVec<T>,
 {
@@ -39,7 +39,7 @@ where
         }
     }
 }
-impl<'a, T, P> Iterator for ImpVecIterMut<'a, T, P>
+impl<'a, T, P> Iterator for IterMut<'a, T, P>
 where
     P: PinnedVec<T>,
 {
@@ -60,12 +60,12 @@ where
     P: PinnedVec<T>,
 {
     /// Returns an iterator for the imp-vec.
-    pub fn iter(&self) -> ImpVecIter<'_, T, P> {
-        ImpVecIter { vec: self, i: 0 }
+    pub fn iter(&self) -> Iter<'_, T, P> {
+        Iter { vec: self, i: 0 }
     }
     /// Returns a mutable iterator for the imp-vec.
-    pub fn iter_mut(&mut self) -> ImpVecIterMut<'_, T, P> {
-        ImpVecIterMut { vec: self, i: 0 }
+    pub fn iter_mut(&mut self) -> IterMut<'_, T, P> {
+        IterMut { vec: self, i: 0 }
     }
 }
 
@@ -74,10 +74,10 @@ where
     P: PinnedVec<T>,
 {
     type Item = &'a T;
-    type IntoIter = ImpVecIter<'a, T, P>;
+    type IntoIter = Iter<'a, T, P>;
 
     fn into_iter(self) -> Self::IntoIter {
-        ImpVecIter { vec: self, i: 0 }
+        Iter { vec: self, i: 0 }
     }
 }
 impl<'a, T, P> IntoIterator for &'a mut ImpVec<T, P>
@@ -85,10 +85,10 @@ where
     P: PinnedVec<T>,
 {
     type Item = &'a mut T;
-    type IntoIter = ImpVecIterMut<'a, T, P>;
+    type IntoIter = IterMut<'a, T, P>;
 
     fn into_iter(self) -> Self::IntoIter {
-        ImpVecIterMut { vec: self, i: 0 }
+        IterMut { vec: self, i: 0 }
     }
 }
 

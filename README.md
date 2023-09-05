@@ -328,6 +328,8 @@ As it has become apparent from the previous example, self referencing vectors ca
 
 `ImpVec` provides further abilities to build cyclic references as well which requires only slightly more care. **orx-pinned-vec** crate defines a general purpose `SelfRefVecItem` trait which is able to define all practical relations among elements of the vector. All methods have default do-nothing implementations; therefore, only the relevant methods need to be implemented. `ImpVec` provides corresponding methods for conveniently and safely managing the relations among elements.
 
+As you may see in the following example, the methods which are required to be implemented are nothing but the relevant getters and setters.
+
 #### C.2.a. Cyclic reference example
 
 Consider for instance a circle of people holding hands. We can define the complete circle by defining the person to the right of each person. Say our circle starts with: `a -> b -> c -> d -> a -> ...`. Note that we have a cyclic relation and we cannot build this only with the `push_get_ref` method. Further assume that people are switching places and we want to be able to update the relations. For the example, there will be a single such move where `b` and `c` will switch places leading to the new circle `a -> c -> b -> d -> a -> ...`.
@@ -389,6 +391,10 @@ assert_eq!(Some("a"), people[3].person_on_right_name()); // d -> a
 
 ```
 
-#### C.2.b. Crates utlizing ImpVec
+#### C.2.b. Crates utlizing `ImpVec`
 
-* [LinkedList](https://crates.io/crates/orx-linked-list): with the help of `ImpVec`, linked list is defined by only two `unsafe` method calls which are isolated only relevant to improve memory utilization.
+* See here for an alternative, convenient and efficient implementation of the doubly-[LinkedList](https://crates.io/crates/orx-linked-list):
+
+    * All relations between elements are defined by thin `&` references avoiding wide smart pointers such as `Box` or `Rc`. This is useful in reducing the size of each linked list node. More importantly, it allows to avoid heap allocations for each element.
+    * All elements are stored in the underlying `PinnedVec` close to each other rather than in random memory locations; hence, improving cache locality.
+    * Linked list is defined by only two `unsafe` method calls which are used only in order to improve memory utilization.
