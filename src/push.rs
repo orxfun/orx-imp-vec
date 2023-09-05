@@ -288,7 +288,7 @@ mod tests {
 
             // ptr-eq
             let cons_ptrs: Vec<_> = lists
-                .into_iter()
+                .iter()
                 .map(|x| x.cons().map(|x| x as *const MyList<'a>))
                 .collect();
             assert!(std::ptr::eq(
@@ -343,7 +343,7 @@ mod tests {
 
             // ptr-eq
             let cons_ptrs: Vec<_> = lists
-                .into_iter()
+                .iter()
                 .map(|x| x.cons().map(|x| x as *const MyList<'a>))
                 .collect();
             for i in 1..10000 {
