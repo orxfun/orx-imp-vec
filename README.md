@@ -23,12 +23,13 @@ Four relevant types work together towards a common goal as follows:
 * struct `ImpVec` wraps any `PinnedVec` implementations and provides the safe api to allow for building vectors where elements may hold references to each other.
 
 Therefore, the main goal is to make it convenient and safe to build tricky data structures, child structures of which holds references to each other.
-This is a common and a very useful pattern to represent structures such as trees, graphs or linked lists.
+This is a common and a very useful pattern to represent structures such as trees, graphs or linked lists. The approach here can be summarized as follows:
 
-Being able to represent such dependencies within a vector has the following advantages over alternative representations with smart pointers:
+* *references rather than indices* → to overcome the complexity of the memory model, we often tend to use `usize` indices to define a relation between children of a data structure; although this might be safe except for out-of-bounds errors, it is difficult to maintain and justify the correctness of relations through plain numbers.
+* *thin references rather than smart pointers* → the relations among elements of the vector are defined by plain references which helps in keeping child structures smaller and in avoiding heap allocations.
+* *better cache locality* → using a pinned vector as the underlying data structures, child elements will be close to each other.
 
-* *better cache locality* →  child structures will be close to each other; therefore, following a path of relations through these references will visit elements of the same vector, rather than children allocated at arbitrary memory locations;
-* *thin references* →  rather than wide pointers, the relations among elements of the vector are defined by plain references which also helps in avoiding heap allocations.
+
 
 ## B. Safety
 
@@ -418,4 +419,4 @@ See here for an alternative, convenient and efficient implementation of the doub
 * All relations between elements are defined by thin `&` references avoiding wide smart pointers such as `Box` or `Rc`. This is useful in reducing the size of each linked list node. More importantly, it allows to avoid heap allocations for each element. Furthermore, the relations are defined without requiring to work with plain indices.
 * All elements are stored in the underlying `PinnedVec` close to each other rather than in random memory locations; hence, improving cache locality.
 
-Note that `unsafe` keyword appears twice in the [orx-linked-list](https://crates.io/crates/orx-linked-list) crate. On the other hand, at the point of writing, `unsafe` appears 63 times in the file defining [the standard linked list](https://doc.rust-lang.org/src/alloc/collections/linked_list.rs.html#51-54). As mentioned in [C](##-C.-Practicality), it is not possible to completely avoid unsafe for defining the interdependencies among elements of a linked list; however, `ImpVec` almost completely encapsulates these calls.
+Note that `unsafe` keyword appears twice in the [orx-linked-list](https://crates.io/crates/orx-linked-list) crate. On the other hand, at the point of writing, `unsafe` appears 63 times in the file defining [the standard linked list](https://doc.rust-lang.org/src/alloc/collections/linked_list.rs.html#51-54). As mentioned in section C, it is not possible to completely avoid unsafe for defining the interdependencies among elements of a linked list; however, `ImpVec` almost completely encapsulates these calls.
