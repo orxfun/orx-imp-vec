@@ -1,4 +1,5 @@
 use orx_pinned_vec::PinnedVec;
+use orx_split_vec::SplitVec;
 use std::{cell::RefCell, marker::PhantomData};
 
 /// `ImpVec` stands for 'immutable-push-vec'.
@@ -11,7 +12,7 @@ use std::{cell::RefCell, marker::PhantomData};
 ///
 /// This allows to hold on the references of already pushed elements
 /// while building the collection.
-pub struct ImpVec<T, P>
+pub struct ImpVec<T, P = SplitVec<T>>
 where
     P: PinnedVec<T>,
 {
@@ -91,5 +92,27 @@ mod tests {
         }
 
         test_all_pinned_types!(test);
+    }
+
+    #[test]
+    fn default_type_params() {
+        let imp: ImpVec<char> = SplitVec::new().into();
+        assert_eq!(SplitVec::new(), imp);
+
+        let imp: ImpVec<char> = SplitVec::with_initial_capacity(2).into();
+        assert_eq!(SplitVec::with_initial_capacity(2), imp);
+
+        let imp: ImpVec<char, FixedVec<char>> = FixedVec::new(10).into();
+        assert_eq!(imp, FixedVec::new(42));
+
+        let imp: ImpVec<char, SplitVec<char, Linear>> = SplitVec::with_linear_growth(2).into();
+        assert_eq!(SplitVec::with_doubling_growth(22), imp);
+
+        let imp: ImpVec<char, SplitVec<char, Doubling>> = SplitVec::with_doubling_growth(2).into();
+        assert_eq!(SplitVec::with_linear_growth(22), imp);
+
+        let imp: ImpVec<char, SplitVec<char, Exponential>> =
+            SplitVec::with_exponential_growth(2, 1.25).into();
+        assert_eq!(imp, FixedVec::new(33));
     }
 }

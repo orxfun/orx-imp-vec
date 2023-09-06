@@ -1,5 +1,6 @@
 use crate::ImpVec;
 use orx_pinned_vec::PinnedVec;
+use orx_split_vec::{Growth, SplitVec};
 
 impl<T, P1, P2> PartialEq<ImpVec<T, P2>> for ImpVec<T, P1>
 where
@@ -49,6 +50,17 @@ where
 {
     fn eq(&self, other: &ImpVec<T, P>) -> bool {
         other.cell.borrow().partial_eq(self)
+    }
+}
+
+impl<T, P, G> PartialEq<ImpVec<T, P>> for SplitVec<T, G>
+where
+    P: PinnedVec<T>,
+    T: PartialEq,
+    G: Growth,
+{
+    fn eq(&self, other: &ImpVec<T, P>) -> bool {
+        self.len() == other.len() && self.iter().zip(other.iter()).all(|(x, y)| x == y)
     }
 }
 
@@ -120,6 +132,21 @@ mod tests {
             }
             assert_eq!([0, 1, 2, 3], imp);
             assert_eq!(imp, [0, 1, 2, 3]);
+        }
+
+        test_all_pinned_types!(test);
+    }
+
+    #[test]
+    fn eq_with_split() {
+        fn test<P: PinnedVec<usize>>(pinned_vec: P) {
+            let imp: ImpVec<_, _> = pinned_vec.into();
+            let mut split = SplitVec::new();
+            for i in 0..42 {
+                imp.push(i);
+                split.push(i);
+            }
+            assert_eq!(split, imp);
         }
 
         test_all_pinned_types!(test);

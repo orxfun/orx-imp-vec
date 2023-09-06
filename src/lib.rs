@@ -58,7 +58,7 @@
 //! ```rust
 //! use orx_imp_vec::prelude::*;
 //!
-//! let vec: ImpVec<_, _> = SplitVec::with_doubling_growth(2).into();
+//! let vec: ImpVec<_> = SplitVec::with_initial_capacity(2).into();
 //! vec.push(0);
 //! vec.push(1);
 //!
@@ -123,7 +123,7 @@
 //!     helps: Option<&'a Person<'a>>,
 //! }
 //!
-//! let mut people: ImpVec<_, _> = SplitVec::with_linear_growth(4).into();
+//! let people: ImpVec<_> = SplitVec::new().into();
 //!
 //! let john = people.push_get_ref(Person {
 //!     name: String::from("john"),
@@ -310,7 +310,7 @@
 //! }
 //!
 //! #[derive(Default)]
-//! struct Graph<'a, T>(ImpVec<Node<'a, T>, SplitVec<Node<'a, T>, Doubling>>);
+//! struct Graph<'a, T>(ImpVec<Node<'a, T>>);
 //!
 //! impl<'a, T> Graph<'a, T> {
 //!     fn add_node(&self, id: T, target_nodes: Vec<&'a Node<'a, T>>) -> &Node<'a, T> {
@@ -373,7 +373,7 @@
 //!     }
 //! }
 //!
-//! let mut people: ImpVec<_, _> = SplitVec::with_doubling_growth(4).into();
+//! let mut people: ImpVec<_> = SplitVec::with_initial_capacity(4).into();
 //!
 //! // just push the people without the relationship
 //! let names = &["a", "b", "c", "d"];
