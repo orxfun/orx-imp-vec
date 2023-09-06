@@ -1,6 +1,6 @@
 use crate::ImpVec;
 use orx_fixed_vec::FixedVec;
-use orx_split_vec::{SplitVec, SplitVecGrowth};
+use orx_split_vec::{Growth, SplitVec};
 
 impl<T> From<ImpVec<T, FixedVec<T>>> for FixedVec<T> {
     fn from(value: ImpVec<T, FixedVec<T>>) -> Self {
@@ -10,7 +10,7 @@ impl<T> From<ImpVec<T, FixedVec<T>>> for FixedVec<T> {
 
 impl<T, G> From<ImpVec<T, SplitVec<T, G>>> for SplitVec<T, G>
 where
-    G: SplitVecGrowth<T>,
+    G: Growth,
 {
     fn from(value: ImpVec<T, SplitVec<T, G>>) -> Self {
         value.cell.into_inner()
@@ -24,7 +24,7 @@ mod tests {
 
     #[test]
     fn into_split_vec() {
-        fn test<G: SplitVecGrowth<usize>>(mut pinned_vec: SplitVec<usize, G>) {
+        fn test<G: Growth>(mut pinned_vec: SplitVec<usize, G>) {
             for i in 0..400 {
                 pinned_vec.push(i * 2);
             }
