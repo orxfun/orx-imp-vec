@@ -2,16 +2,20 @@
 #[cfg(test)]
 macro_rules! test_all_pinned_types {
     ($fun:tt) => {
-        let custom_fun = std::rc::Rc::new(
-            |fragments: &[Fragment<_>]| {
-                if fragments.len() % 2 == 0 {
-                    2
+        #[derive(Clone, Debug)]
+        pub struct DoubleEveryFourFragments;
+        impl Growth for DoubleEveryFourFragments {
+            fn new_fragment_capacity<T>(&self, fragments: &[Fragment<T>]) -> usize {
+                let do_double = fragments.len() % 4 == 0;
+                let last_capacity = fragments.last().map(|f| f.capacity()).unwrap_or(4);
+                if do_double {
+                    last_capacity * 2
                 } else {
-                    8
+                    last_capacity
                 }
-            },
-        );
-        $fun(SplitVec::with_custom_growth_function(custom_fun));
+            }
+        }
+        $fun(SplitVec::with_growth(DoubleEveryFourFragments));
         $fun(SplitVec::with_linear_growth(2));
         $fun(SplitVec::with_doubling_growth(2));
         $fun(SplitVec::with_exponential_growth(4, 1.5));
@@ -24,16 +28,20 @@ macro_rules! test_all_pinned_types {
 #[cfg(test)]
 macro_rules! test_all_growth_types {
     ($fun:tt) => {
-        let custom_fun = std::rc::Rc::new(
-            |fragments: &[Fragment<_>]| {
-                if fragments.len() % 2 == 0 {
-                    2
+        #[derive(Clone, Debug)]
+        pub struct DoubleEveryFourFragments;
+        impl Growth for DoubleEveryFourFragments {
+            fn new_fragment_capacity<T>(&self, fragments: &[Fragment<T>]) -> usize {
+                let do_double = fragments.len() % 4 == 0;
+                let last_capacity = fragments.last().map(|f| f.capacity()).unwrap_or(4);
+                if do_double {
+                    last_capacity * 2
                 } else {
-                    8
+                    last_capacity
                 }
-            },
-        );
-        $fun(SplitVec::with_custom_growth_function(custom_fun));
+            }
+        }
+        $fun(SplitVec::with_growth(DoubleEveryFourFragments));
         $fun(SplitVec::with_linear_growth(2));
         $fun(SplitVec::with_doubling_growth(2));
         $fun(SplitVec::with_exponential_growth(4, 1.5));

@@ -259,11 +259,11 @@ mod tests {
     fn make_cons_list_as_pinned() {
         fn test<'a, G>(pinned_vec: SplitVec<MyList<'a>, G>)
         where
-            G: SplitVecGrowth<MyList<'a>> + 'a,
+            G: Growth + 'a,
         {
             fn lists_maker<'a, G>(pinned_vec: SplitVec<MyList<'a>, G>) -> SplitVec<MyList<'a>, G>
             where
-                G: SplitVecGrowth<MyList<'a>> + 'a,
+                G: Growth + 'a,
             {
                 let lists: ImpVec<_, _> = pinned_vec.into();
                 let r0 = lists.push_get_ref(List::Nil);
@@ -312,11 +312,11 @@ mod tests {
     fn make_cons_list_as_pinned_long() {
         fn test<'a, G>(pinned_vec: SplitVec<MyList<'a>, G>)
         where
-            G: SplitVecGrowth<MyList<'a>> + 'a,
+            G: Growth + 'a,
         {
             fn lists_maker<'a, G>(pinned_vec: SplitVec<MyList<'a>, G>) -> SplitVec<MyList<'a>, G>
             where
-                G: SplitVecGrowth<MyList<'a>> + 'a,
+                G: Growth + 'a,
             {
                 let lists: ImpVec<_, _> = pinned_vec.into();
                 let mut last = lists.push_get_ref(List::Nil);

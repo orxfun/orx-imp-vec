@@ -230,7 +230,7 @@
 //!
 //! ```rust
 //! use orx_imp_vec::prelude::*;
-//! type ImpVecLin<T> = ImpVec<T, SplitVec<T>>;
+//! type ImpVecLin<T> = ImpVec<T, SplitVec<T, Linear>>;
 //!
 //! enum List<'a, T> {
 //!     Cons(T, &'a List<'a, T>),
@@ -294,7 +294,7 @@
 //! }
 //!
 //! #[derive(Default)]
-//! struct Graph<'a, T>(ImpVec<Node<'a, T>, SplitVec<Node<'a, T>, DoublingGrowth>>);
+//! struct Graph<'a, T>(ImpVec<Node<'a, T>, SplitVec<Node<'a, T>, Doubling>>);
 //!
 //! impl<'a, T> Graph<'a, T> {
 //!     fn add_node(&self, id: T, target_nodes: Vec<&'a Node<'a, T>>) -> &Node<'a, T> {

@@ -1,8 +1,6 @@
-use std::cell::RefCell;
-
-use orx_pinned_vec::PinnedVec;
-
 use crate::ImpVec;
+use orx_pinned_vec::PinnedVec;
+use std::cell::RefCell;
 
 impl<T, P> Default for ImpVec<T, P>
 where
@@ -26,9 +24,8 @@ mod tests {
             assert_eq!(default_imp, imp_from_default_pin);
         }
 
-        test::<SplitVec<char, LinearGrowth>>();
-        test::<SplitVec<char, DoublingGrowth>>();
-        test::<SplitVec<char, ExponentialGrowth>>();
-        test::<SplitVec<char, CustomGrowth<char>>>();
+        test::<SplitVec<char, Linear>>();
+        test::<SplitVec<char, Doubling>>();
+        test::<SplitVec<char, Exponential>>();
     }
 }
