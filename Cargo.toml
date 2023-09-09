@@ -1,6 +1,6 @@
 [package]
 name = "orx-imp-vec"
-version = "0.9.5"
+version = "0.9.6"
 edition = "2021"
 authors = ["orxfun <orx.ugur.arikan@gmail.com>"]
 description = "ImpVec stands for 'immutable-push-vec'. It wraps a PinnedVec giving it safe abilities to push/extend operations with an immutable reference and a safe api for building self-referencing vectors."
