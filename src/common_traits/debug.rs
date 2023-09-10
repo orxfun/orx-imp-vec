@@ -9,6 +9,7 @@ where
     T: Debug,
 {
     fn fmt(&self, f: &mut Formatter<'_>) -> Result {
+        write!(f, "ImpVec of ")?;
         self.cell.borrow().debug(f)
     }
 }
@@ -25,12 +26,12 @@ mod tests {
             for i in 0..17 {
                 pinned_vec.push(i);
             }
-            let expected_debug = format!("{:?}", pinned_vec);
+            let expected_debug = format!("ImpVec of {:?}", pinned_vec);
 
             let imp: ImpVec<_, _> = pinned_vec.into();
+            println!("{:?}", imp);
             assert_eq!(expected_debug, format!("{:?}", imp));
         }
-
         test_all_pinned_types!(test);
     }
 }
