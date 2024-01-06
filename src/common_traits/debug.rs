@@ -10,7 +10,7 @@ where
 {
     fn fmt(&self, f: &mut Formatter<'_>) -> Result {
         write!(f, "ImpVec of ")?;
-        self.cell.borrow().debug(f)
+        self.cell().borrow().debug(f)
     }
 }
 

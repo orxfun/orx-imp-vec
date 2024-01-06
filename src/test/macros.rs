@@ -17,9 +17,7 @@ macro_rules! test_all_pinned_types {
         }
         $fun(SplitVec::with_growth(DoubleEveryFourFragments));
         $fun(SplitVec::with_linear_growth(2));
-        $fun(SplitVec::with_doubling_growth(2));
-        $fun(SplitVec::with_exponential_growth(4, 1.5));
-        $fun(SplitVec::with_exponential_growth(4, 2.5));
+        $fun(SplitVec::with_doubling_growth());
         $fun(FixedVec::new(1000));
     };
 }
@@ -43,8 +41,6 @@ macro_rules! test_all_growth_types {
         }
         $fun(SplitVec::with_growth(DoubleEveryFourFragments));
         $fun(SplitVec::with_linear_growth(2));
-        $fun(SplitVec::with_doubling_growth(2));
-        $fun(SplitVec::with_exponential_growth(4, 1.5));
-        $fun(SplitVec::with_exponential_growth(4, 2.5));
+        $fun(SplitVec::with_doubling_growth());
     };
 }

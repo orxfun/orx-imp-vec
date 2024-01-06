@@ -28,7 +28,7 @@ mod tests {
     #[test]
     fn index() {
         fn test<P: PinnedVec<usize>>(pinned_vec: P) {
-            let imp: ImpVec<_, _> = pinned_vec.into();
+            let mut imp: ImpVec<_, _> = pinned_vec.into();
             for i in 0..1000 {
                 imp.push(42 + i);
             }
