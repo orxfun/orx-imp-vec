@@ -9,11 +9,7 @@ where
     T: PartialEq,
 {
     fn eq(&self, other: &ImpVec<T, P2>) -> bool {
-        if self.len() == other.len() {
-            self.iter().zip(other.iter()).all(|(x, y)| x == y)
-        } else {
-            false
-        }
+        self.len() == other.len() && self.iter().zip(other.iter()).all(|(x, y)| x == y)
     }
 }
 impl<T, P> Eq for ImpVec<T, P>
@@ -30,7 +26,7 @@ where
     T: PartialEq,
 {
     fn eq(&self, other: &S) -> bool {
-        self.cell.borrow().partial_eq(other.as_ref())
+        self.cell().borrow().partial_eq(other.as_ref())
     }
 }
 
@@ -40,7 +36,7 @@ where
     T: PartialEq,
 {
     fn eq(&self, other: &ImpVec<T, P>) -> bool {
-        other.cell.borrow().partial_eq(self)
+        other.cell().borrow().partial_eq(self)
     }
 }
 impl<T, P, const N: usize> PartialEq<ImpVec<T, P>> for [T; N]
@@ -49,7 +45,7 @@ where
     T: PartialEq,
 {
     fn eq(&self, other: &ImpVec<T, P>) -> bool {
-        other.cell.borrow().partial_eq(self)
+        other.cell().borrow().partial_eq(self)
     }
 }
 
@@ -72,8 +68,8 @@ mod tests {
     #[test]
     fn eq_with_imp() {
         fn test<P: PinnedVec<usize>>(pinned_vec: P) {
-            let imp1: ImpVec<_, _> = pinned_vec.into();
-            let imp2: ImpVec<_, _> = FixedVec::new(3344).into();
+            let mut imp1: ImpVec<_, _> = pinned_vec.into();
+            let mut imp2: ImpVec<_, _> = FixedVec::new(3344).into();
 
             for i in 0..1000 {
                 imp1.push(i);
@@ -93,7 +89,7 @@ mod tests {
     #[test]
     fn eq_with_asref() {
         fn test<P: PinnedVec<usize>>(pinned_vec: P) {
-            let imp: ImpVec<_, _> = pinned_vec.into();
+            let mut imp: ImpVec<_, _> = pinned_vec.into();
             let mut vec = vec![];
 
             for i in 0..1000 {
@@ -112,7 +108,7 @@ mod tests {
     #[test]
     fn eq_with_slice() {
         fn test<P: PinnedVec<usize>>(pinned_vec: P) {
-            let imp: ImpVec<_, _> = pinned_vec.into();
+            let mut imp: ImpVec<_, _> = pinned_vec.into();
             for i in 0..4 {
                 imp.push(i);
             }
@@ -126,7 +122,7 @@ mod tests {
     #[test]
     fn eq_with_array() {
         fn test<P: PinnedVec<usize>>(pinned_vec: P) {
-            let imp: ImpVec<_, _> = pinned_vec.into();
+            let mut imp: ImpVec<_, _> = pinned_vec.into();
             for i in 0..4 {
                 imp.push(i);
             }
@@ -140,7 +136,7 @@ mod tests {
     #[test]
     fn eq_with_split() {
         fn test<P: PinnedVec<usize>>(pinned_vec: P) {
-            let imp: ImpVec<_, _> = pinned_vec.into();
+            let mut imp: ImpVec<_, _> = pinned_vec.into();
             let mut split = SplitVec::new();
             for i in 0..42 {
                 imp.push(i);
