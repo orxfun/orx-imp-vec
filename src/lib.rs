@@ -18,7 +18,7 @@
 //!
 //! It is natural to expect that appending elements to a vector does not affect already added elements. However, this is usually not the case due to underlying memory management. For instance, `std::vec::Vec` may move already added elements to different memory locations to maintain the contagious layout of the vector.
 //!
-//! `PinnedVec` prevents such implicit changes in memory locations. It guarantees that push and extend methods keep memory locations of already added elements intact. Therefore, it is perfectly safe to hold on to references of the vector while appending elements.
+//! [`PinnedVec`](https://crates.io/crates/orx-pinned-vec) prevents such implicit changes in memory locations. It guarantees that push and extend methods keep memory locations of already added elements intact. Therefore, it is perfectly safe to hold on to references of the vector while appending elements.
 //!
 //! Consider the classical example that does not compile, which is often presented to highlight the safety guarantees of rust:
 //!
