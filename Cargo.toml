@@ -1,15 +1,14 @@
 [package]
 name = "orx-imp-vec"
-version = "1.0.0"
+version = "2.0.0"
 edition = "2021"
 authors = ["orxfun <orx.ugur.arikan@gmail.com>"]
-description = "A data structure to enable conveniently building performant self referential collections such as trees, graphs and linked lists."
+description = "`ImpVec`, standing for immutable push vector 👿, is a data structure which allows appending elements with a shared reference."
 license = "MIT"
 repository = "https://github.com/orxfun/orx-imp-vec/"
-keywords = ["vec", "array", "split", "fragments", "pinned"]
+keywords = ["vec", "pinned", "bag", "container", "split"]
 categories = ["data-structures", "rust-patterns"]
 
 [dependencies]
-orx-fixed-vec = "1.0"
-orx-pinned-vec = "1.0"
-orx-split-vec = "1.2"
+orx-pinned-vec = "2.0"
+orx-split-vec = "2.0"
