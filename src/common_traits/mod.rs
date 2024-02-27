@@ -1,4 +1,4 @@
 mod debug;
-mod deref;
+mod deref_derefmut;
 mod eq;
-mod index;
+mod from;
