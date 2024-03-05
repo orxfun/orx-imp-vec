@@ -1,5 +1,8 @@
 # orx-imp-vec
 
+[![orx-imp-vec crate](https://img.shields.io/crates/v/orx-imp-vec.svg)](https://crates.io/crates/orx-imp-vec)
+[![orx-imp-vec documentation](https://docs.rs/orx-imp-vec/badge.svg)](https://docs.rs/orx-imp-vec)
+
 `ImpVec`, standing for immutable push vector 👿, is a data structure which allows appending elements with a shared reference.
 
 Specifically, it extends vector capabilities with the following two methods:
