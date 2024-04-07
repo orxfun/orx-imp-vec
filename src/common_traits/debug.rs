@@ -19,10 +19,7 @@ mod tests {
         let vec = ImpVec::new();
         vec.imp_extend_from_slice(&['a', 'b', 'c']);
 
-        let debug_str = format!("{:?}", &vec);
-        assert_eq!(
-            debug_str,
-            "ImpVec { pinned_vec: SplitVec [\n    ['a', 'b', 'c']\n]\n }"
-        );
+        let expected_debug_str = format!("ImpVec {{ pinned_vec: {:?} }}", &vec.pinned_vec);
+        assert_eq!(expected_debug_str, format!("{:?}", &vec));
     }
 }

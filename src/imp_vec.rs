@@ -1,8 +1,7 @@
 use orx_pinned_vec::PinnedVec;
 use orx_split_vec::SplitVec;
-use std::marker::PhantomData;
+use std::{cell::UnsafeCell, marker::PhantomData};
 
-#[derive(Clone)]
 /// `ImpVec`, standing for immutable push vector 👿, is a data structure which allows appending elements with a shared reference.
 ///
 /// Specifically, it extends vector capabilities with the following two methods:
@@ -68,8 +67,8 @@ pub struct ImpVec<T, P = SplitVec<T>>
 where
     P: PinnedVec<T>,
 {
-    pub(crate) pinned_vec: P,
-    pub(crate) _phantom: PhantomData<T>,
+    pub(crate) pinned_vec: UnsafeCell<P>,
+    pub(crate) phantom: PhantomData<T>,
 }
 
 impl<T, P: PinnedVec<T>> ImpVec<T, P> {
@@ -90,7 +89,7 @@ impl<T, P: PinnedVec<T>> ImpVec<T, P> {
     /// assert_eq!(&pinned_vec, &[42]);
     /// ```
     pub fn into_inner(self) -> P {
-        self.pinned_vec
+        self.pinned_vec.into_inner()
     }
 
     /// Pushes the `value` to the vector.
@@ -169,13 +168,7 @@ impl<T, P: PinnedVec<T>> ImpVec<T, P> {
     /// * does not mutate any of already added elements, and hence,
     /// * **it is not different than creating a new element in the scope**.
     pub fn imp_push(&self, value: T) {
-        #[allow(invalid_reference_casting)]
-        unsafe fn into_mut<'a, T>(reference: &T) -> &'a mut T {
-            &mut *(reference as *const T as *mut T)
-        }
-
-        let vec = unsafe { into_mut(&self.pinned_vec) };
-        vec.push(value);
+        self.pinned_mut().push(value);
     }
 
     /// Extends the vector with the given `slice`.
@@ -257,13 +250,16 @@ impl<T, P: PinnedVec<T>> ImpVec<T, P> {
     where
         T: Clone,
     {
-        #[allow(invalid_reference_casting)]
-        unsafe fn into_mut<'a, T>(reference: &T) -> &'a mut T {
-            &mut *(reference as *const T as *mut T)
-        }
+        self.pinned_mut().extend_from_slice(slice);
+    }
 
-        let vec = unsafe { into_mut(&self.pinned_vec) };
-        vec.extend_from_slice(slice);
+    // helper
+    #[allow(clippy::mut_from_ref)]
+    pub(crate) fn pinned_mut(&self) -> &mut P {
+        // SAFETY: `ImpVec` does not implement Send or Sync.
+        // Further `imp_push` and `imp_extend_from_slice` methods are safe to call with a shared reference due to pinned vector guarantees.
+        // All other calls to this internal method require a mutable reference.
+        unsafe { &mut *self.pinned_vec.get() }
     }
 }
 
@@ -280,8 +276,8 @@ impl<T> ImpVec<T> {
     /// ```
     pub fn new() -> Self {
         Self {
-            pinned_vec: SplitVec::default(),
-            _phantom: Default::default(),
+            pinned_vec: SplitVec::default().into(),
+            phantom: Default::default(),
         }
     }
 }
@@ -299,6 +295,19 @@ impl<T> Default for ImpVec<T> {
     /// ```
     fn default() -> Self {
         Self::new()
+    }
+}
+
+impl<T, P> Clone for ImpVec<T, P>
+where
+    P: PinnedVec<T> + Clone,
+{
+    fn clone(&self) -> Self {
+        let pinned_vec = unsafe { &mut *self.pinned_vec.get() }.clone();
+        Self {
+            pinned_vec: pinned_vec.into(),
+            phantom: self.phantom,
+        }
     }
 }
 
