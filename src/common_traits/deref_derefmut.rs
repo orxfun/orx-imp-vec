@@ -5,13 +5,13 @@ use std::ops::{Deref, DerefMut};
 impl<T, P: PinnedVec<T>> Deref for ImpVec<T, P> {
     type Target = P;
     fn deref(&self) -> &Self::Target {
-        &self.pinned_vec
+        self.pinned_mut()
     }
 }
 
 impl<T, P: PinnedVec<T>> DerefMut for ImpVec<T, P> {
     fn deref_mut(&mut self) -> &mut Self::Target {
-        &mut self.pinned_vec
+        self.pinned_mut()
     }
 }
 
@@ -25,7 +25,7 @@ mod tests {
         vec.imp_extend_from_slice(&['a', 'b', 'c']);
 
         let pinned_deref = vec.deref();
-        assert_eq!(pinned_deref, &vec.pinned_vec);
+        assert_eq!(pinned_deref, vec.pinned_mut());
     }
 
     #[test]
