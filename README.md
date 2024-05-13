@@ -37,7 +37,7 @@ vec.push(4);
 // assert_eq!(ref_to_first, &0);
 ```
 
-This wonderful feature of the borrow checker of rust is not required and used for `imp_push` and `imp_extend_from_slice` methods of `ImpVec` since these methods do not require a `&mut self` reference. Therefore, the following code compiles and runs perfectly safely.
+This beloved feature of the borrow checker of rust is not required and used for `imp_push` and `imp_extend_from_slice` methods of `ImpVec` since these methods do not require a `&mut self` reference. Therefore, the following code compiles and runs perfectly safely.
 
 ```rust
 use orx_imp_vec::prelude::*;
