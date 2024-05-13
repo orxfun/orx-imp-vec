@@ -1,6 +1,6 @@
 [package]
 name = "orx-imp-vec"
-version = "2.2.0"
+version = "2.3.0"
 edition = "2021"
 authors = ["orxfun <orx.ugur.arikan@gmail.com>"]
 description = "`ImpVec`, standing for immutable push vector 👿, is a data structure which allows appending elements with a shared reference."
@@ -10,8 +10,6 @@ keywords = ["vec", "pinned", "bag", "container", "split"]
 categories = ["data-structures", "rust-patterns"]
 
 [dependencies]
-orx-pinned-vec = "2.9"
-orx-split-vec = "2.11"
-
-[dev-dependencies]
-orx-fixed-vec = "2.9"
+orx-fixed-vec = "2.10"
+orx-pinned-vec = "2.10"
+orx-split-vec = "2.12"

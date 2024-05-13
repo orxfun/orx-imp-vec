@@ -263,25 +263,6 @@ impl<T, P: PinnedVec<T>> ImpVec<T, P> {
     }
 }
 
-impl<T> ImpVec<T> {
-    /// Creates a new empty imp-vec.
-    ///
-    /// # Example
-    ///
-    /// ```rust
-    /// use orx_imp_vec::prelude::*;
-    ///
-    /// let imp_vec: ImpVec<char> = ImpVec::new();
-    /// assert!(imp_vec.is_empty());
-    /// ```
-    pub fn new() -> Self {
-        Self {
-            pinned_vec: SplitVec::default().into(),
-            phantom: Default::default(),
-        }
-    }
-}
-
 impl<T> Default for ImpVec<T> {
     /// Creates a new empty imp-vec.
     ///
