@@ -57,6 +57,10 @@ assert_eq!(vec.len(), 7);
 assert_eq!(ref_to_first, &0);
 ```
 
+## Contributing
+
+Contributions are welcome! If you notice an error, have a question or think something could be improved, please open an [issue](https://github.com/orxfun/orx-imp-vec/issues/new) or create a PR.
+
 ## License
 
 This library is licensed under MIT license. See LICENSE for details.
