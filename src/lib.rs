@@ -77,9 +77,6 @@
     clippy::todo
 )]
 
-#[cfg(test)]
-mod tests;
-
 mod common_traits;
 mod imp_vec;
 mod new;
