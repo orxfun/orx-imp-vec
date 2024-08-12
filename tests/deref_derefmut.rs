@@ -1,4 +1,4 @@
-use crate::prelude::*;
+use orx_imp_vec::prelude::*;
 use std::ops::{Deref, DerefMut};
 
 #[test]
@@ -7,7 +7,7 @@ fn deref() {
     vec.imp_extend_from_slice(&['a', 'b', 'c']);
 
     let pinned_deref = vec.deref();
-    assert_eq!(pinned_deref, vec.pinned_mut());
+    assert_eq!(pinned_deref, &['a', 'b', 'c']);
 }
 
 #[test]

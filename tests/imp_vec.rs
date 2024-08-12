@@ -13,55 +13,55 @@ fn new_default() {
 
 #[test]
 fn into_inner() {
-    let impvec = ImpVec::new();
-    impvec.imp_push(42);
-    impvec.imp_extend_from_slice(&[7]);
+    let imp_vec = ImpVec::new();
+    imp_vec.imp_push(42);
+    imp_vec.imp_extend_from_slice(&[7]);
 
-    let pinned = impvec.into_inner();
+    let pinned = imp_vec.into_inner();
     assert_eq!(&[42, 7], &pinned);
 }
 
 #[test]
 fn imp_push() {
-    let impvec = ImpVec::new();
-    impvec.imp_push(42);
+    let imp_vec = ImpVec::new();
+    imp_vec.imp_push(42);
 
-    let ref_to_first = &impvec[0];
+    let ref_to_first = &imp_vec[0];
     assert_eq!(ref_to_first, &42);
 
     for i in 1..56424 {
-        impvec.imp_push(i);
+        imp_vec.imp_push(i);
     }
 
     assert_eq!(ref_to_first, &42);
     for i in 1..56424 {
-        assert_eq!(i, impvec[i]);
+        assert_eq!(i, imp_vec[i]);
     }
 }
 
 #[test]
 fn imp_extend_from_slice() {
-    let impvec = ImpVec::new();
-    impvec.imp_push(42);
+    let imp_vec = ImpVec::new();
+    imp_vec.imp_push(42);
 
-    let ref_to_first = &impvec[0];
+    let ref_to_first = &imp_vec[0];
     assert_eq!(ref_to_first, &42);
 
     for i in 1..56424 {
-        impvec.imp_extend_from_slice(&[i]);
+        imp_vec.imp_extend_from_slice(&[i]);
     }
 
     assert_eq!(ref_to_first, &42);
     for i in 1..56424 {
-        assert_eq!(i, impvec[i]);
+        assert_eq!(i, imp_vec[i]);
     }
 }
 
 #[test]
 fn clone() {
-    let impvec = ImpVec::new();
-    impvec.imp_extend_from_slice(&[1, 4, 2, 1, 7]);
+    let imp_vec = ImpVec::new();
+    imp_vec.imp_extend_from_slice(&[1, 4, 2, 1, 7]);
 
-    let clone = impvec.clone();
+    let clone = imp_vec.clone();
     assert_eq!(&[1, 4, 2, 1, 7], &clone.into_inner());
 }

@@ -1,4 +1,4 @@
-use crate::prelude::*;
+use orx_imp_vec::prelude::*;
 
 #[test]
 fn debug() {
