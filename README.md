@@ -107,7 +107,7 @@ struct ExprInScope<'a> {
 }
 
 impl<'a> ExprInScope<'a> {
-    /// Recall, it knows that scope it belongs to,
+    /// Recall, it knows the scope it belongs to,
     /// and can check it in O(1)
     fn belongs_to_same_scope(&self, other: Self) -> bool {
         let self_scope = self.scope as *const Scope;
