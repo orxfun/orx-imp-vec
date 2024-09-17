@@ -1,12 +1,17 @@
 use crate::imp_vec::ImpVec;
+use core::fmt::Debug;
 use orx_pinned_vec::PinnedVec;
-use std::fmt::Debug;
 
-impl<T, P: PinnedVec<T> + Debug> Debug for ImpVec<T, P> {
-    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        let pinned_vec = unsafe { &*self.pinned_vec.get() };
-        f.debug_struct("ImpVec")
-            .field("pinned_vec", &pinned_vec)
-            .finish()
+impl<T: Debug, P: PinnedVec<T> + Debug> Debug for ImpVec<T, P> {
+    fn fmt(&self, f: &mut core::fmt::Formatter<'_>) -> core::fmt::Result {
+        write!(f, "[")?;
+        let mut iter = self.iter();
+        if let Some(x) = iter.next() {
+            write!(f, "{:?}", x)?;
+            for x in iter {
+                write!(f, ", {:?}", x)?;
+            }
+        }
+        write!(f, "]")
     }
 }

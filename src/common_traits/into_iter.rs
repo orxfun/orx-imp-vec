@@ -1,4 +1,5 @@
-use crate::prelude::*;
+use crate::ImpVec;
+use orx_pinned_vec::PinnedVec;
 
 impl<T, P: PinnedVec<T>> IntoIterator for ImpVec<T, P> {
     type Item = T;

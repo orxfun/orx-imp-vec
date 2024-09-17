@@ -1,6 +1,6 @@
+use core::{cell::UnsafeCell, marker::PhantomData};
 use orx_pinned_vec::PinnedVec;
 use orx_split_vec::SplitVec;
-use std::{cell::UnsafeCell, marker::PhantomData};
 
 /// `ImpVec`, standing for immutable push vector 👿, is a data structure which allows appending elements with a shared reference.
 ///
@@ -47,7 +47,7 @@ use std::{cell::UnsafeCell, marker::PhantomData};
 /// Therefore, the following code compiles and runs perfectly safely.
 ///
 /// ```rust
-/// use orx_imp_vec::prelude::*;
+/// use orx_imp_vec::*;
 ///
 /// let mut vec = ImpVec::new();
 /// vec.extend_from_slice(&[0, 1, 2, 3]);
@@ -99,7 +99,7 @@ impl<T, P: PinnedVec<T>> ImpVec<T, P> {
     /// # Example
     ///
     /// ```rust
-    /// use orx_imp_vec::prelude::*;
+    /// use orx_imp_vec::*;
     ///
     /// let mut vec = ImpVec::new();
     ///
@@ -149,7 +149,7 @@ impl<T, P: PinnedVec<T>> ImpVec<T, P> {
     /// Therefore, the following code compiles and runs perfectly safely.
     ///
     /// ```rust
-    /// use orx_imp_vec::prelude::*;
+    /// use orx_imp_vec::*;
     ///
     /// let mut vec = ImpVec::new();
     /// vec.extend_from_slice(&[0, 1, 2, 3]);
@@ -178,7 +178,7 @@ impl<T, P: PinnedVec<T>> ImpVec<T, P> {
     /// # Example
     ///
     /// ```rust
-    /// use orx_imp_vec::prelude::*;
+    /// use orx_imp_vec::*;
     ///
     /// let mut vec = ImpVec::new();
     ///
@@ -229,7 +229,7 @@ impl<T, P: PinnedVec<T>> ImpVec<T, P> {
     /// Therefore, the following code compiles and runs perfectly safely.
     ///
     /// ```rust
-    /// use orx_imp_vec::prelude::*;
+    /// use orx_imp_vec::*;
     ///
     /// let mut vec = ImpVec::new();
     /// vec.push(0);
@@ -269,7 +269,7 @@ impl<T> Default for ImpVec<T> {
     /// # Example
     ///
     /// ```rust
-    /// use orx_imp_vec::prelude::*;
+    /// use orx_imp_vec::*;
     ///
     /// let imp_vec: ImpVec<usize> = ImpVec::default();
     /// assert!(imp_vec.is_empty());

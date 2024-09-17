@@ -1,6 +1,6 @@
 use crate::imp_vec::ImpVec;
+use core::ops::{Deref, DerefMut};
 use orx_pinned_vec::PinnedVec;
-use std::ops::{Deref, DerefMut};
 
 impl<T, P: PinnedVec<T>> Deref for ImpVec<T, P> {
     type Target = P;
