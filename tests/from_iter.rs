@@ -1,4 +1,4 @@
-use orx_imp_vec::prelude::*;
+use orx_imp_vec::*;
 
 #[test]
 fn from_iter() {

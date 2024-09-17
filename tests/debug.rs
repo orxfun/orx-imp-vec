@@ -1,4 +1,4 @@
-use orx_imp_vec::prelude::*;
+use orx_imp_vec::*;
 
 #[test]
 fn debug() {
@@ -8,10 +8,8 @@ fn debug() {
     }
 
     let imp_vec_str = format!("{:?}", &vec);
-
-    let pinned_vec = vec.into_inner();
-    let pinned_vec_str = format!("{:?}", &pinned_vec);
-    let expected_str = format!("ImpVec {{ pinned_vec: {} }}", pinned_vec_str);
+    let expected_str =
+        format!("[\"0\", \"1\", \"2\", \"3\", \"4\", \"5\", \"6\", \"7\", \"8\", \"9\"]");
 
     assert_eq!(imp_vec_str, expected_str);
 }

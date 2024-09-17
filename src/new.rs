@@ -10,7 +10,7 @@ impl<T> ImpVec<T> {
     /// # Example
     ///
     /// ```rust
-    /// use orx_imp_vec::prelude::*;
+    /// use orx_imp_vec::*;
     ///
     /// let imp_vec: ImpVec<char> = ImpVec::new();
     /// assert!(imp_vec.is_empty());

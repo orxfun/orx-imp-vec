@@ -1,5 +1,5 @@
 use orx_fixed_vec::FixedVec;
-use orx_imp_vec::prelude::*;
+use orx_imp_vec::*;
 
 #[test]
 fn eq() {

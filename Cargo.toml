@@ -1,16 +1,16 @@
 [package]
 name = "orx-imp-vec"
-version = "2.6.0"
+version = "2.7.0"
 edition = "2021"
 authors = ["orxfun <orx.ugur.arikan@gmail.com>"]
-description = "`ImpVec`, standing for immutable push vector 👿, is a data structure which allows appending elements with a shared reference."
+description = "`ImpVec`, stands for immutable push vector 👿, is a data structure which allows appending elements with a shared reference."
 license = "MIT"
 repository = "https://github.com/orxfun/orx-imp-vec/"
 keywords = ["vec", "pinned", "bag", "container", "split"]
-categories = ["data-structures", "rust-patterns"]
+categories = ["data-structures", "rust-patterns", "no-std"]
 
 [dependencies]
-orx-pseudo-default = "1.2"
-orx-pinned-vec = "3.3"
-orx-fixed-vec = "3.3"
-orx-split-vec = "3.3"
+orx-pseudo-default = { version = "1.4", default-features = false }
+orx-pinned-vec = "3.9"
+orx-fixed-vec = "3.9"
+orx-split-vec = "3.9"
