@@ -3,7 +3,7 @@
 [![orx-imp-vec crate](https://img.shields.io/crates/v/orx-imp-vec.svg)](https://crates.io/crates/orx-imp-vec)
 [![orx-imp-vec documentation](https://docs.rs/orx-imp-vec/badge.svg)](https://docs.rs/orx-imp-vec)
 
-`ImpVec`, stands for immutable push vector 👿, is a data structure which allows appending elements with a shared reference.
+`ImpVec` stands for immutable push vector 👿, it is a data structure which allows appending elements with a shared reference.
 
 Specifically, it extends vector capabilities with the following two methods:
 * [`fn imp_push(&self, value: T)`](https://docs.rs/orx-imp-vec/latest/orx_imp_vec/struct.ImpVec.html#method.imp_push)
@@ -196,6 +196,9 @@ assert_eq!(
 
 </details>
 
+You may find another demonstration where an `ImpVec` mimics a scope in the [system_of_linear_inequalities.rs](https://github.com/orxfun/orx-imp-vec/blob/main/examples/system_of_linear_inequalities.rs) example.
+
+Finally, you may find the initial motivation of this crate and the `ImpVec` type in [imp-vec-motivation](https://orxfun.github.io/orxfun-notes/#/imp-vec-motivation-2024-10-03) article.
 
 ## Safety
 

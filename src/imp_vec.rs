@@ -2,7 +2,7 @@ use core::{cell::UnsafeCell, marker::PhantomData};
 use orx_pinned_vec::PinnedVec;
 use orx_split_vec::SplitVec;
 
-/// `ImpVec`, standing for immutable push vector 👿, is a data structure which allows appending elements with a shared reference.
+/// `ImpVec`, stands for immutable push vector 👿, is a data structure which allows appending elements with a shared reference.
 ///
 /// Specifically, it extends vector capabilities with the following two methods:
 /// * `fn imp_push(&self, value: T)`
@@ -169,6 +169,36 @@ impl<T, P: PinnedVec<T>> ImpVec<T, P> {
     /// * **it is not different than creating a new element in the scope**.
     pub fn imp_push(&self, value: T) {
         self.pinned_mut().push(value);
+    }
+
+    /// Pushes the `value` to the vector and returns a reference to it.
+    ///
+    /// It is the composition of [`vec.imp_push(value)`] call followed by `&vec[vec.len() - 1]`.
+    ///
+    /// [`vec.imp_push(value)`]: crate::ImpVec::imp_push
+    ///
+    /// # Examples
+    ///
+    /// This method provides a shorthand for the following common use case.
+    ///
+    /// ```
+    /// use orx_imp_vec::*;
+    ///
+    /// let vec = ImpVec::new();
+    ///
+    /// vec.imp_push('a');
+    /// let a = &vec[vec.len() - 1];
+    /// assert_eq!(a, &'a');
+    ///
+    /// // or with imp_push_get_ref
+    ///
+    /// let b = vec.imp_push_get_ref('b');
+    /// assert_eq!(b, &'b');
+    /// ```
+    pub fn imp_push_get_ref(&self, value: T) -> &T {
+        let pinned = self.pinned_mut();
+        pinned.push(value);
+        &pinned[pinned.len() - 1]
     }
 
     /// Extends the vector with the given `slice`.
