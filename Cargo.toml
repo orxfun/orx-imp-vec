@@ -1,6 +1,6 @@
 [package]
 name = "orx-imp-vec"
-version = "2.9.0"
+version = "2.10.0"
 edition = "2021"
 authors = ["orxfun <orx.ugur.arikan@gmail.com>"]
 description = "`ImpVec` stands for immutable push vector 👿, it is a data structure which allows appending elements with a shared reference."
