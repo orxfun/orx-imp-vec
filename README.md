@@ -1,6 +1,7 @@
 # orx-imp-vec
 
 [![orx-imp-vec crate](https://img.shields.io/crates/v/orx-imp-vec.svg)](https://crates.io/crates/orx-imp-vec)
+[![orx-imp-vec crate](https://img.shields.io/crates/d/orx-imp-vec.svg)](https://crates.io/crates/orx-imp-vec)
 [![orx-imp-vec documentation](https://docs.rs/orx-imp-vec/badge.svg)](https://docs.rs/orx-imp-vec)
 
 `ImpVec` stands for immutable push vector 👿, it is a data structure which allows appending elements with a shared reference.
@@ -246,4 +247,4 @@ Contributions are welcome! If you notice an error, have a question or think some
 
 ## License
 
-This library is licensed under MIT license. See LICENSE for details.
+Dual-licensed under [Apache 2.0](LICENSE-APACHE) or [MIT](LICENSE-MIT).
