@@ -29,12 +29,17 @@ fn imp_push() {
     let ref_to_first = &imp_vec[0];
     assert_eq!(ref_to_first, &42);
 
-    for i in 1..56424 {
+    #[cfg(not(miri))]
+    let until = 56424;
+    #[cfg(miri)]
+    let until = 34;
+
+    for i in 1..until {
         imp_vec.imp_push(i);
     }
 
     assert_eq!(ref_to_first, &42);
-    for i in 1..56424 {
+    for i in 1..until {
         assert_eq!(i, imp_vec[i]);
     }
 }
@@ -47,12 +52,17 @@ fn imp_extend_from_slice() {
     let ref_to_first = &imp_vec[0];
     assert_eq!(ref_to_first, &42);
 
-    for i in 1..56424 {
+    #[cfg(not(miri))]
+    let until = 56424;
+    #[cfg(miri)]
+    let until = 34;
+
+    for i in 1..until {
         imp_vec.imp_extend_from_slice(&[i]);
     }
 
     assert_eq!(ref_to_first, &42);
-    for i in 1..56424 {
+    for i in 1..until {
         assert_eq!(i, imp_vec[i]);
     }
 }
