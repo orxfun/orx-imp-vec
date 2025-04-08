@@ -8,7 +8,10 @@ fn from_iter() {
         }
     }
 
+    #[cfg(not(miri))]
     let n = 845;
+    #[cfg(miri)]
+    let n = 57;
 
     let imp: ImpVec<_> = (0..n).map(|x| x.to_string()).collect();
     validate(imp);
