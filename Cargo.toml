@@ -1,7 +1,7 @@
 [package]
 name = "orx-imp-vec"
-version = "2.12.0"
-edition = "2021"
+version = "2.13.0"
+edition = "2024"
 authors = ["orxfun <orx.ugur.arikan@gmail.com>"]
 description = "`ImpVec` stands for immutable push vector 👿, it is a data structure which allows appending elements with a shared reference."
 license = "MIT OR Apache-2.0"
@@ -10,8 +10,8 @@ keywords = ["vec", "pinned", "bag", "container", "split"]
 categories = ["data-structures", "rust-patterns", "no-std"]
 
 [dependencies]
-orx-iterable = { version = "1.2.0", default-features = false }
-orx-pseudo-default = { version = "2.0.0", default-features = false }
-orx-pinned-vec = "3.15"
-orx-fixed-vec = "3.15"
-orx-split-vec = "3.15"
+orx-iterable = { version = "1.3.0", default-features = false }
+orx-pseudo-default = { version = "2.1.0", default-features = false }
+orx-pinned-vec = { version = "3.16.0", default-features = false }
+orx-fixed-vec = { version = "3.16.0", default-features = false }
+orx-split-vec = { version = "3.16.0", default-features = false }
