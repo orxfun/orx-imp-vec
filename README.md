@@ -241,6 +241,19 @@ assert_eq!(vec.len(), 7);
 assert_eq!(ref_to_first, &0);
 ```
 
+## Parallelization
+
+`ImpVec` implements [`ConcurrentCollection`](https://docs.rs/orx-concurrent-iter/latest/orx_concurrent_iter/trait.ConcurrentCollection.html) provided that the wrapped `PinnedVec` is a concurrent collection (all known implementations satisfy this).
+
+Therefore, when [orx_parallel](https://crates.io/crates/orx-parallel) crate is included, `ImpVec` also automatically implements [`ParallelizableCollection`](https://docs.rs/orx-parallel/latest/orx_parallel/trait.ParallelizableCollection.html).
+
+This means that computations over the vector can be efficiently parallelized:
+
+* `imp_vec.par()` returns a parallel iterator over references to its elements, and
+* `imp_vec.into_par()` consumes the vector and returns a parallel iterator of the owned elements.
+
+You may find demonstrations in [`demo_parallelization`](https://github.com/orxfun/orx-imp-vec/blob/main/examples/demo_parallelization.rs) and [`bench_parallelization`](https://github.com/orxfun/orx-imp-vec/blob/main/examples/bench_parallelization.rs) examples.
+
 ## Contributing
 
 Contributions are welcome! If you notice an error, have a question or think something could be improved, please open an [issue](https://github.com/orxfun/orx-imp-vec/issues/new) or create a PR.
