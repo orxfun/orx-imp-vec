@@ -292,32 +292,3 @@ impl<T, P: PinnedVec<T>> ImpVec<T, P> {
         unsafe { &mut *self.pinned_vec.get() }
     }
 }
-
-impl<T> Default for ImpVec<T> {
-    /// Creates a new empty imp-vec.
-    ///
-    /// # Example
-    ///
-    /// ```rust
-    /// use orx_imp_vec::*;
-    ///
-    /// let imp_vec: ImpVec<usize> = ImpVec::default();
-    /// assert!(imp_vec.is_empty());
-    /// ```
-    fn default() -> Self {
-        Self::new()
-    }
-}
-
-impl<T, P> Clone for ImpVec<T, P>
-where
-    P: PinnedVec<T> + Clone,
-{
-    fn clone(&self) -> Self {
-        let pinned_vec = unsafe { &mut *self.pinned_vec.get() }.clone();
-        Self {
-            pinned_vec: pinned_vec.into(),
-            phantom: self.phantom,
-        }
-    }
-}

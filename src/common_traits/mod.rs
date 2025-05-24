@@ -1,4 +1,6 @@
+mod clone;
 mod debug;
+mod default;
 mod deref_derefmut;
 mod eq;
 mod from;
