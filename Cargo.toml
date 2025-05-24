@@ -15,4 +15,8 @@ orx-pseudo-default = { version = "2.1.0", default-features = false }
 orx-pinned-vec = { version = "3.16.0", default-features = false }
 orx-fixed-vec = { version = "3.17.0", default-features = false }
 orx-split-vec = { version = "3.17.0", default-features = false }
-orx-concurrent-iter = { version = "2.1.0", registry = "artifactory" }
+orx-concurrent-iter = { version = "2.1.0", default-features = false }
+
+[dev-dependencies]
+orx-parallel = { version = "2.0.1", default-features = false }
+test-case = "3.3.1"
