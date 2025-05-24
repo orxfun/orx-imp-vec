@@ -291,4 +291,11 @@ impl<T, P: PinnedVec<T>> ImpVec<T, P> {
         // All other calls to this internal method require a mutable reference.
         unsafe { &mut *self.pinned_vec.get() }
     }
+
+    pub(crate) fn pinned(&self) -> &P {
+        // SAFETY: `ImpVec` does not implement Send or Sync.
+        // Further `imp_push` and `imp_extend_from_slice` methods are safe to call with a shared reference due to pinned vector guarantees.
+        // All other calls to this internal method require a mutable reference.
+        unsafe { &*self.pinned_vec.get() }
+    }
 }
