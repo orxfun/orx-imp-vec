@@ -7,9 +7,9 @@ impl<T: Debug, P: PinnedVec<T> + Debug> Debug for ImpVec<T, P> {
         write!(f, "[")?;
         let mut iter = self.iter();
         if let Some(x) = iter.next() {
-            write!(f, "{:?}", x)?;
+            write!(f, "{x:?}")?;
             for x in iter {
-                write!(f, ", {:?}", x)?;
+                write!(f, ", {x:?}")?;
             }
         }
         write!(f, "]")
