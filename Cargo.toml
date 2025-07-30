@@ -19,5 +19,5 @@ orx-concurrent-iter = { version = "2.3.0", default-features = false }
 
 [dev-dependencies]
 clap = { version = "4.5.38", features = ["derive"] }
-orx-parallel = { git = "https://github.com/orxfun/orx-parallel", branch = "relaxing-send-trait-bound", default-features = false }
+orx-parallel = { version = "2.3.0", default-features = false }
 test-case = "3.3.1"
