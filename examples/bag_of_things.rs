@@ -6,7 +6,7 @@ struct Bag {
 }
 
 impl Bag {
-    fn push_thing(&self, name: &str) -> ThingInBag {
+    fn push_thing(&self, name: &str) -> ThingInBag<'_> {
         self.things.imp_push(Thing {
             name: name.to_string(),
         });
@@ -31,7 +31,7 @@ struct ThingInBag<'a> {
     bag: &'a Bag,
 }
 impl<'a> ThingInBag<'a> {
-    fn push_thing_in_same_bag(&self, name: &str) -> ThingInBag {
+    fn push_thing_in_same_bag(&self, name: &str) -> ThingInBag<'a> {
         self.bag.push_thing(name)
     }
 
