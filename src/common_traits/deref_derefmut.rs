@@ -8,3 +8,5 @@ impl<T, P: PinnedVec<T>> Deref for ImpVec<T, P> {
         self.pinned_mut()
     }
 }
+
+// TODO: implement mut methods that are not removing elements from the vector.
