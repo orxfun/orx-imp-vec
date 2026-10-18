@@ -27,4 +27,9 @@ impl<'a, T> Elem<'a, T> {
             Self { ptr, vec_ref }
         })
     }
+
+    pub fn get(&self) -> &'a T {
+        // SAFETY: ImpVec holding `ptr` is still alive and it is grow only
+        unsafe { &*self.ptr }
+    }
 }
