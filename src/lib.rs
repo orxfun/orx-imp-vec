@@ -15,6 +15,7 @@
 extern crate alloc;
 
 mod common_traits;
+mod elem;
 mod imp_vec;
 mod new;
 

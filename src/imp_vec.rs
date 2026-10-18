@@ -201,6 +201,12 @@ impl<T, P: PinnedVec<T>> ImpVec<T, P> {
         &pinned[pinned.len() - 1]
     }
 
+    pub fn imp_push_get_ptr(&self, value: T) -> *const T {
+        let pinned = self.pinned_mut();
+        pinned.push(value);
+        pinned.get_ptr(pinned.len() - 1).expect("in bounds")
+    }
+
     /// Extends the vector with the given `slice`.
     /// This method differs from the `extend_from_slice` method with the required reference.
     /// Unlike `extend_from_slice`, `imp_extend_from_slice` allows to push the element with a shared reference.
