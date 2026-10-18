@@ -213,6 +213,10 @@ impl<T, P: PinnedVec<T>> ImpVec<T, P> {
         Elem::new_from_pushed(self, value)
     }
 
+    pub fn get(&self, index: usize) -> Option<Elem<'_, T>> {
+        Elem::new_from_position(self, index)
+    }
+
     /// Extends the vector with the given `slice`.
     /// This method differs from the `extend_from_slice` method with the required reference.
     /// Unlike `extend_from_slice`, `imp_extend_from_slice` allows to push the element with a shared reference.
