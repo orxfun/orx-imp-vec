@@ -13,9 +13,9 @@ const N: usize = 4735;
     [0, 1, 4]
 )]
 fn par_map_filter_collect(n: usize, nt: usize) {
-    let vec = ImpVec::new();
+    let mut vec = SplitVec::new();
     for i in 0..n {
-        vec.imp_push((i + 10).to_string());
+        vec.push((i + 10).to_string());
     }
 
     let expected: Vec<_> = vec
@@ -23,6 +23,8 @@ fn par_map_filter_collect(n: usize, nt: usize) {
         .map(|x| format!("{}!", x))
         .filter(|x| !x.starts_with('1'))
         .collect();
+
+    let vec = ImpVec::from(vec);
 
     let result_ref: Vec<_> = vec
         .par()
@@ -45,9 +47,9 @@ fn par_map_filter_collect(n: usize, nt: usize) {
 #[test]
 fn pass_as_parallelizable_collection() {
     let n = 64;
-    let vec = ImpVec::new();
+    let mut vec = SplitVec::new();
     for i in 0..n {
-        vec.imp_push((i + 10).to_string());
+        vec.push((i + 10).to_string());
     }
 
     fn take_ref<C: ParallelizableCollection<Item = String>>(vec: &C) -> Vec<String> {
@@ -63,6 +65,7 @@ fn pass_as_parallelizable_collection() {
         .filter(|x| !x.starts_with('1'))
         .collect();
 
+    let vec = ImpVec::from(vec);
     let result_ref = take_ref(&vec);
 
     assert_eq!(expected, result_ref);
