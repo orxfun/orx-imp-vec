@@ -5,7 +5,6 @@ mod deref_derefmut;
 mod eq;
 mod from;
 mod from_iter;
-mod index;
 mod into_con_iter_owned;
 mod into_con_iter_ref;
 mod into_iter;
