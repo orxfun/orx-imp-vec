@@ -9,7 +9,8 @@ const UNTIL: usize = 54;
 fn new() {
     fn test<P: PinnedVec<String>>(vec: ImpVec<String, P>) {
         for i in 13..UNTIL {
-            assert_eq!(vec.get(i - 13), Some(&i.to_string()));
+            let e = vec.get(i - 13).unwrap();
+            assert!(e.map(|x| x == &i.to_string()));
         }
     }
 
