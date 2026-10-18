@@ -2,6 +2,8 @@ use core::{cell::UnsafeCell, marker::PhantomData};
 use orx_pinned_vec::PinnedVec;
 use orx_split_vec::SplitVec;
 
+use crate::elem::Elem;
+
 /// `ImpVec`, stands for immutable push vector 👿, is a data structure which allows appending elements with a shared reference.
 ///
 /// Specifically, it extends vector capabilities with the following two methods:
@@ -205,6 +207,10 @@ impl<T, P: PinnedVec<T>> ImpVec<T, P> {
         let pinned = self.pinned_mut();
         pinned.push(value);
         pinned.get_ptr(pinned.len() - 1).expect("in bounds")
+    }
+
+    pub fn push(&self, value: T) -> Elem<'_, T> {
+        Elem::new_from_pushed(self, value)
     }
 
     /// Extends the vector with the given `slice`.
