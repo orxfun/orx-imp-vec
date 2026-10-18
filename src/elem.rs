@@ -29,7 +29,13 @@ impl<'a, T> Elem<'a, T> {
     }
 
     pub fn get(&self) -> &'a T {
-        // SAFETY: ImpVec holding `ptr` is still alive and it is grow only
+        // SAFETY: `ptr` is guarenteed to be valid by two `new_` methods.
+        // ImpVec holding `ptr` is alive for `'a`.
+        // ImpVec is backed by a pinned vector and it is grow only.
+        // Hence, `ptr` is still valid.
+        // Further, ImpVec is not Sync, and hence, there is no race condition.
         unsafe { &*self.ptr }
     }
+
+    pub fn set(&self, value: T) {}
 }
