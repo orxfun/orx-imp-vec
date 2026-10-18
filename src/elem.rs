@@ -21,7 +21,7 @@ impl<'a, T> Elem<'a, T> {
     where
         P: PinnedVec<T>,
     {
-        vec.get(index).map(|x| {
+        vec.pinned().get(index).map(|x| {
             let ptr = x as *const T as *mut T;
             let vec_ref = PhantomData;
             Self { ptr, vec_ref }
