@@ -290,6 +290,7 @@ impl<T, P: PinnedVec<T>> ImpVec<T, P> {
     }
 
     // helper
+
     #[allow(clippy::mut_from_ref)]
     pub(crate) fn pinned_mut(&self) -> &mut P {
         // SAFETY: `ImpVec` does not implement Send or Sync.

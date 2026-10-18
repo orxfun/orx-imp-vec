@@ -8,9 +8,3 @@ impl<T, P: PinnedVec<T>> Deref for ImpVec<T, P> {
         self.pinned_mut()
     }
 }
-
-impl<T, P: PinnedVec<T>> DerefMut for ImpVec<T, P> {
-    fn deref_mut(&mut self) -> &mut Self::Target {
-        self.pinned_mut()
-    }
-}

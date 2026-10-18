@@ -16,6 +16,6 @@ impl<T, P: PinnedVec<T>> Index<usize> for ImpVec<T, P> {
 impl<T, P: PinnedVec<T>> IndexMut<usize> for ImpVec<T, P> {
     #[inline(always)]
     fn index_mut(&mut self, index: usize) -> &mut Self::Output {
-        self.get_mut(index).expect(OOB)
+        self.pinned_mut().get_mut(index).expect(OOB)
     }
 }
