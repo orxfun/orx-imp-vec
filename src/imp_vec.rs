@@ -209,7 +209,7 @@ impl<T, P: PinnedVec<T>> ImpVec<T, P> {
         pinned.get_ptr(pinned.len() - 1).expect("in bounds")
     }
 
-    pub fn push(&self, value: T) -> Elem<'_, T> {
+    pub fn push<'a>(&'a self, value: T) -> Elem<'a, T> {
         Elem::new_from_pushed(self, value)
     }
 
