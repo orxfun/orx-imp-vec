@@ -14,6 +14,9 @@
 
 extern crate alloc;
 
+#[cfg(test)]
+mod tests;
+
 mod common_traits;
 mod elem;
 mod imp_vec;
