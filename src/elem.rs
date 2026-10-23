@@ -104,4 +104,13 @@ impl<'a, T> Elem<'a, T> {
         // TODO: explain safety guarantees
         f(unsafe { &mut *self.ptr });
     }
+
+    pub fn position_in<P>(self, vec: &'a ImpVec<T, P>) -> Option<usize>
+    where
+        P: PinnedVec<T>,
+    {
+        // SAFETY: reference does not leak to another thread
+        let rf = unsafe { self.get() };
+        vec.pinned().index_of(rf)
+    }
 }
