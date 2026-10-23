@@ -117,4 +117,8 @@ impl<'a, T> Elem<'a, T> {
     pub fn as_ptr(self) -> *const T {
         self.ptr
     }
+
+    pub fn as_mut_ptr(self) -> *mut T {
+        self.ptr
+    }
 }
