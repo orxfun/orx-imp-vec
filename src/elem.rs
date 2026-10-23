@@ -113,4 +113,8 @@ impl<'a, T> Elem<'a, T> {
         let rf = unsafe { self.get() };
         vec.pinned().index_of(rf)
     }
+
+    pub fn as_ptr(self) -> *const T {
+        self.ptr
+    }
 }
