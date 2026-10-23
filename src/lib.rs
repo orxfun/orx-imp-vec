@@ -14,10 +14,15 @@
 
 extern crate alloc;
 
+#[cfg(test)]
+mod tests;
+
 mod common_traits;
+mod elem;
 mod imp_vec;
 mod new;
 
+pub use elem::Elem;
 pub use imp_vec::ImpVec;
 pub use orx_fixed_vec::FixedVec;
 pub use orx_iterable::{Collection, CollectionMut};
