@@ -56,11 +56,11 @@ impl<'a, T> Elem<'a, T> {
     /// and change its value using `set` on this thread.
     /// This leads to a race condition.
     #[inline(always)]
-    pub unsafe fn get(&self) -> &'a T {
+    pub unsafe fn get(self) -> &'a T {
         unsafe { &*self.ptr }
     }
 
-    pub fn cloned(&self) -> T
+    pub fn cloned(self) -> T
     where
         T: Clone,
     {
@@ -68,7 +68,7 @@ impl<'a, T> Elem<'a, T> {
         unsafe { self.get() }.clone()
     }
 
-    pub fn copied(&self) -> T
+    pub fn copied(self) -> T
     where
         T: Copy,
     {
@@ -76,7 +76,7 @@ impl<'a, T> Elem<'a, T> {
         *unsafe { self.get() }
     }
 
-    pub fn map<F, U>(&self, f: F) -> U
+    pub fn map<F, U>(self, f: F) -> U
     where
         F: FnOnce(&T) -> U,
     {
@@ -84,7 +84,7 @@ impl<'a, T> Elem<'a, T> {
         f(unsafe { self.get() })
     }
 
-    pub fn replace(&self, value: T) -> T {
+    pub fn replace(self, value: T) -> T {
         // SAFETY: `ptr` is guarenteed to be valid by two `new_` methods.
         // ImpVec holding `ptr` is alive for `'a`.
         // ImpVec is backed by a pinned vector and it is grow only.
@@ -93,11 +93,11 @@ impl<'a, T> Elem<'a, T> {
         unsafe { self.ptr.replace(value) }
     }
 
-    pub fn set(&self, value: T) {
+    pub fn set(self, value: T) {
         _ = self.replace(value);
     }
 
-    pub fn update<F>(&self, f: F)
+    pub fn update<F>(self, f: F)
     where
         F: FnOnce(&mut T),
     {
