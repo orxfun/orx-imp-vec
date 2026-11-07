@@ -60,6 +60,12 @@ impl<'a, T> Elem<'a, T> {
         unsafe { &*self.ptr }
     }
 
+    // TODO: safety
+    #[inline(always)]
+    pub unsafe fn get_mut(self) -> &'a mut T {
+        unsafe { &mut *self.ptr }
+    }
+
     pub fn cloned(self) -> T
     where
         T: Clone,
