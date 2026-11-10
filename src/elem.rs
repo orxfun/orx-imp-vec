@@ -16,6 +16,10 @@ impl<'a, T> Clone for Elem<'a, T> {
 impl<'a, T> Copy for Elem<'a, T> {}
 
 impl<'a, T> Elem<'a, T> {
+    pub unsafe fn new(ptr: *mut T) -> Self {
+        Self { ptr, vec_ref: &() }
+    }
+
     pub(crate) fn new_from_pushed<P>(vec: &'a ImpVec<T, P>, value: T) -> Self
     where
         P: PinnedVec<T>,
