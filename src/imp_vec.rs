@@ -1,4 +1,5 @@
 use core::{cell::UnsafeCell, marker::PhantomData};
+use orx_iterable::{Collection, Iterable};
 use orx_pinned_vec::PinnedVec;
 use orx_split_vec::SplitVec;
 
@@ -314,5 +315,9 @@ impl<T, P: PinnedVec<T>> ImpVec<T, P> {
         // Further `imp_push` and `imp_extend_from_slice` methods are safe to call with a shared reference due to pinned vector guarantees.
         // All other calls to this internal method require a mutable reference.
         unsafe { &*self.pinned_vec.get() }
+    }
+
+    pub fn iter(&self) -> <<P as Collection>::Iterable<'_> as Iterable>::Iter {
+        self.pinned().iter()
     }
 }
