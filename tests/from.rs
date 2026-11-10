@@ -6,5 +6,5 @@ fn from() {
     vec.extend_from_slice(&['a', 'b', 'c']);
 
     let imp_vec = ImpVec::from(vec);
-    assert_eq!(*imp_vec, &['a', 'b', 'c']);
+    assert_eq!(imp_vec, vec!['a', 'b', 'c']);
 }

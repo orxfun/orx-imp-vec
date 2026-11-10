@@ -1,6 +1,9 @@
 use core::{cell::UnsafeCell, marker::PhantomData};
+use orx_iterable::{Collection, Iterable};
 use orx_pinned_vec::PinnedVec;
 use orx_split_vec::SplitVec;
+
+use crate::elem::Elem;
 
 /// `ImpVec`, stands for immutable push vector 👿, is a data structure which allows appending elements with a shared reference.
 ///
@@ -201,6 +204,20 @@ impl<T, P: PinnedVec<T>> ImpVec<T, P> {
         &pinned[pinned.len() - 1]
     }
 
+    pub fn imp_push_get_ptr(&self, value: T) -> *const T {
+        let pinned = self.pinned_mut();
+        pinned.push(value);
+        pinned.get_ptr(pinned.len() - 1).expect("in bounds")
+    }
+
+    pub fn push<'a>(&'a self, value: T) -> Elem<'a, T> {
+        Elem::new_from_pushed(self, value)
+    }
+
+    pub fn get(&self, index: usize) -> Option<Elem<'_, T>> {
+        Elem::new_from_position(self, index)
+    }
+
     /// Extends the vector with the given `slice`.
     /// This method differs from the `extend_from_slice` method with the required reference.
     /// Unlike `extend_from_slice`, `imp_extend_from_slice` allows to push the element with a shared reference.
@@ -284,6 +301,7 @@ impl<T, P: PinnedVec<T>> ImpVec<T, P> {
     }
 
     // helper
+
     #[allow(clippy::mut_from_ref)]
     pub(crate) fn pinned_mut(&self) -> &mut P {
         // SAFETY: `ImpVec` does not implement Send or Sync.
@@ -297,5 +315,9 @@ impl<T, P: PinnedVec<T>> ImpVec<T, P> {
         // Further `imp_push` and `imp_extend_from_slice` methods are safe to call with a shared reference due to pinned vector guarantees.
         // All other calls to this internal method require a mutable reference.
         unsafe { &*self.pinned_vec.get() }
+    }
+
+    pub fn iter(&self) -> <<P as Collection>::Iterable<'_> as Iterable>::Iter {
+        self.pinned().iter()
     }
 }
